@@ -6,10 +6,12 @@ import com.online.buy.consumer.registration.mapper.ObjectMapperUtil;
 import com.online.buy.consumer.registration.service.ConsumerService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/consumer")
+@PreAuthorize("hasRole('BUYER')")
 public class ConsumerController {
 
     private final ConsumerService consumerService;
