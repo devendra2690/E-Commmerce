@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="consumer-registration" />
+        <module name="payment-processor" />
+        <module name="authorization.server" />
+        <module name="security-api" />
+        <module name="shipping-processor" />
+        <module name="order-processor" />
+        <module name="notification-processor" />
+        <module name="inventory-processor" />
+        <module name="authentication-processor" />
+      </profile>
+    </annotationProcessing>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="authentication-processor" options="-parameters" />
+      <module name="authorization.server" options="-parameters" />
+      <module name="consumer-registration" options="-parameters" />
+      <module name="inventory-processor" options="-parameters" />
+      <module name="notification-processor" options="-parameters" />
+      <module name="order-processor" options="-parameters" />
+      <module name="payment-processor" options="-parameters" />
+      <module name="security-api" options="-parameters" />
+      <module name="shipping-processor" options="-parameters" />
+    </option>
+  </component>
+</project>

@@ -138,7 +138,7 @@ public class AuthorizationServerConfig {
                     .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_POST)
                     .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                     .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
-                    .redirectUri("http://127.0.0.1:8082/login/oauth2/code/oidc-client")
+                    .redirectUri(client.getRedirectUris().stream().findFirst().get())
                     .postLogoutRedirectUri("http://127.0.0.1:8082/")
                     .scope(OidcScopes.OPENID)
                     .scope(OidcScopes.PROFILE)
