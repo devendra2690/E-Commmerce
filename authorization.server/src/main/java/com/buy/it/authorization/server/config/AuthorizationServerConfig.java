@@ -95,7 +95,7 @@ public class AuthorizationServerConfig {
         http
                 .csrf(csrf -> csrf.disable()) // Disable CSRF for simplicity (for now)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/register","/api/auth/register-client").permitAll() // Allow registration without authentication
+                        .requestMatchers("/api/auth/register","/api/auth/register-client","/.well-known/jwks.json").permitAll() // Allow registration without authentication
                         .anyRequest().authenticated() // Secure other endpoints
                 )
                 // Form login handles the redirect to the login page from the
