@@ -1,11 +1,15 @@
 package com.buy.it.authorization.server.config;
 
 import com.buy.it.authorization.server.entity.Client;
+import com.buy.it.authorization.server.entity.OAuthKey;
 import com.buy.it.authorization.server.repository.ClientRepository;
+import com.buy.it.authorization.server.repository.OAuthKeyRepository;
 import com.buy.it.authorization.server.repository.UserRepository;
-import com.buy.it.authorization.server.util.Jwks;
+import com.buy.it.authorization.server.util.KeyUtil;
+import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import org.springframework.context.annotation.Bean;
@@ -49,31 +53,34 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 @Configuration
 @EnableWebSecurity
 public class AuthorizationServerConfig {
 
+    private final OAuthKeyRepository oAuthKeyRepository;
+
+    public AuthorizationServerConfig(OAuthKeyRepository oAuthKeyRepository) {
+        this.oAuthKeyRepository = oAuthKeyRepository;
+    }
+
     @Bean
     @Order(1)
     public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http)
             throws Exception {
 
+        // This creates a configurer that registers all OAuth2 authorization endpoints (like /oauth2/token, /oauth2/authorize, etc.).
         OAuth2AuthorizationServerConfigurer authorizationServerConfigurer =
                 OAuth2AuthorizationServerConfigurer.authorizationServer();
 
         http
-                .securityMatcher(authorizationServerConfigurer.getEndpointsMatcher())
-                .with(authorizationServerConfigurer, (authorizationServer) ->
+                .securityMatcher(authorizationServerConfigurer.getEndpointsMatcher()) //Ensures that the security rules only apply to OAuth2 endpoints and not other application endpoints.
+                .with(authorizationServerConfigurer, (authorizationServer) -> //Registers OAuth2 authorization endpoints.
                         authorizationServer
-                                .oidc(Customizer.withDefaults())
-                        //authorizationServerConfigurer.registeredClientRepository()// Enable OpenID Connect 1.0
-
+                                .oidc(Customizer.withDefaults()) //Enables OpenID Connect 1.0 (adds /userinfo, /jwks.json, etc.).
                 )
-                .authorizeHttpRequests((authorize) ->
+                .authorizeHttpRequests((authorize) ->  //Requires authentication for all incoming requests to the Auth Server.
                         authorize
                                 .anyRequest().authenticated()
                 )
@@ -81,8 +88,8 @@ public class AuthorizationServerConfig {
                 // authorization endpoint
                 .exceptionHandling((exceptions) -> exceptions
                         .defaultAuthenticationEntryPointFor(
-                                new LoginUrlAuthenticationEntryPoint("/login"),
-                                new MediaTypeRequestMatcher(MediaType.TEXT_HTML)
+                                new LoginUrlAuthenticationEntryPoint("/login"),  // If a user is not authenticated, redirect them to /login instead of returning an HTTP 401 error.
+                                new MediaTypeRequestMatcher(MediaType.TEXT_HTML) // This applies only for web browsers (MediaType.TEXT_HTML), API clients (Postman, curl) will still receive a 401 Unauthorized response.
                         )
                 );
         return http.build();
@@ -95,7 +102,7 @@ public class AuthorizationServerConfig {
         http
                 .csrf(csrf -> csrf.disable()) // Disable CSRF for simplicity (for now)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/register","/api/auth/register-client","/.well-known/jwks.json").permitAll() // Allow registration without authentication
+                        .requestMatchers("/api/auth/register","/api/auth/register-client").permitAll() // Allow registration without authentication
                         .anyRequest().authenticated() // Secure other endpoints
                 )
                 // Form login handles the redirect to the login page from the
@@ -165,13 +172,33 @@ public class AuthorizationServerConfig {
         };
     }
 
-    @Bean
+   /*
+
+       Way 1 of creating Private and public keys
+
+
+   @Bean
     public JWKSource<SecurityContext> jwkSource() {
         RSAKey rsaKey = Jwks.generateRsa();
         JWKSet jwkSet = new JWKSet(rsaKey);
         return (jwkSelector, securityContext) -> jwkSelector.select(jwkSet);
-    }
-    private static KeyPair generateRsaKey() {
+    }*/
+
+    /*
+
+    Way 2 of creating Private and public keys
+
+    @Bean
+    public JWKSource<SecurityContext> jwkSource() {
+        KeyPair keyPair = generateRsaKey();
+        RSAKey rsaKey = new RSAKey.Builder((RSAPublicKey) keyPair.getPublic())
+                .privateKey(keyPair.getPrivate())
+                .keyID("static-kid-value") // Keep a stable key ID
+                .algorithm(JWSAlgorithm.RS256)
+                .build();
+        return new ImmutableJWKSet<>(new JWKSet(rsaKey));
+
+        private static KeyPair generateRsaKey() {
         KeyPair keyPair;
         try {
             KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
@@ -182,6 +209,27 @@ public class AuthorizationServerConfig {
             throw new IllegalStateException(ex);
         }
         return keyPair;
+    }
+
+    }*/
+
+    @Bean
+    public JWKSource<SecurityContext> jwkSource() throws Exception {
+        OAuthKey oauthKey = oAuthKeyRepository.findLatestKey();
+        if (oauthKey == null) {
+            throw new IllegalStateException("No RSA keys found in the database!");
+        }
+
+        RSAPrivateKey privateKey = KeyUtil.convertToPrivateKey(oauthKey.getPrivateKey());
+        RSAPublicKey publicKey = KeyUtil.convertToPublicKey(oauthKey.getPublicKey());
+
+        RSAKey rsaKey = new RSAKey.Builder(publicKey)
+                .privateKey(privateKey)
+                .keyID(oauthKey.getKeyId())
+                .algorithm(JWSAlgorithm.RS256)
+                .build();
+
+        return new ImmutableJWKSet<>(new JWKSet(rsaKey));
     }
 
     @Bean

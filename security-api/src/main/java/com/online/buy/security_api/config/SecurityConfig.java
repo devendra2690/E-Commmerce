@@ -42,7 +42,7 @@ public class SecurityConfig {
     public JwtDecoder jwtDecoder() {
         return NimbusJwtDecoder
                 .withJwkSetUri("http://localhost:8080/oauth2/jwks")
-                .jwsAlgorithm(SignatureAlgorithm.RS256)
+                //.jwsAlgorithm(SignatureAlgorithm.RS256) Only needed if not fetching keys from Auth server and hardcoded somewhere
                 .build();
     }
 
