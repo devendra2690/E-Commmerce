@@ -13,6 +13,8 @@
         <option value="$PROJECT_DIR$/consumer-registration/pom.xml" />
         <option value="$PROJECT_DIR$/notification-processor/pom.xml" />
         <option value="$PROJECT_DIR$/authentication-processor/pom.xml" />
+        <option value="$PROJECT_DIR$/product-processor/pom.xml" />
+        <option value="$PROJECT_DIR$/exception-processor/pom.xml" />
       </list>
     </option>
     <option name="ignoredFiles">

@@ -4,10 +4,12 @@
     <file url="file://$PROJECT_DIR$/authentication-processor/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/authorization.server/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/consumer-registration/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/exception-processor/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/inventory-processor/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/notification-processor/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/order-processor/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/payment-processor/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/product-processor/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/security-api/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/shipping-processor/src/main/java" charset="UTF-8" />
   </component>

@@ -10,11 +10,13 @@
         <module name="consumer-registration" />
         <module name="payment-processor" />
         <module name="authorization.server" />
+        <module name="exception-processor" />
         <module name="security-api" />
         <module name="shipping-processor" />
         <module name="order-processor" />
         <module name="notification-processor" />
         <module name="inventory-processor" />
+        <module name="product-processor" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
@@ -26,10 +28,12 @@
       <module name="authentication-processor" options="-parameters" />
       <module name="authorization.server" options="-parameters" />
       <module name="consumer-registration" options="-parameters" />
+      <module name="exception-processor" options="-parameters" />
       <module name="inventory-processor" options="-parameters" />
       <module name="notification-processor" options="-parameters" />
       <module name="order-processor" options="-parameters" />
       <module name="payment-processor" options="-parameters" />
+      <module name="product-processor" options="-parameters" />
       <module name="security-api" options="-parameters" />
       <module name="shipping-processor" options="-parameters" />
     </option>
