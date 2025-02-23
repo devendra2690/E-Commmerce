@@ -232,10 +232,33 @@ public class AuthorizationServerConfig {
         return new ImmutableJWKSet<>(new JWKSet(rsaKey));
     }
 
+    /*
+     *  The JWKSource<SecurityContext> is already configured to fetch the RSA key from the database.
+     *  OAuth2AuthorizationServerConfiguration.jwtDecoder(jwkSource) initializes a JWT decoder using the public key from JWK.
+     * This JwtDecoder verifies and decodes incoming JWTs when clients send access tokens to protected resources.
+     *
+     * In Case this auth server, it will help to project resources other than OAuth endpoint
+     *
+     * @param jwkSource
+     * @return
+     */
+
     @Bean
     public JwtDecoder jwtDecoder(JWKSource<SecurityContext> jwkSource) {
         return OAuth2AuthorizationServerConfiguration.jwtDecoder(jwkSource);
     }
+
+    /*
+       Enabling default endpoint of OAuth2.
+       Generally we do not customize ti unless auth serve is behind proxy or Load balancer
+
+       public AuthorizationServerSettings authorizationServerSettings() {
+            return AuthorizationServerSettings.builder()
+                .issuer("https://auth.example.com")  // External-facing URL
+                .build();
+       }
+
+     */
 
     @Bean
     public AuthorizationServerSettings authorizationServerSettings() {
@@ -246,5 +269,25 @@ public class AuthorizationServerConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
+
+   /*
+
+     Use this encoder in production because though Bcrypt isa powerful it expect plaintext when matching
+     and we can not send client secret in plain text format
+
+   private static final String SECRET_KEY = "some-random-secret"; // Server-side secret, should be in plain text
+
+   @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new Pbkdf2PasswordEncoder(SECRET_KEY, 10000, 256);
+    }
+
+        SECRET_KEY → A private key used for hashing (server-side).
+        10000 iterations → Higher means stronger security.
+        256-bit hash → Secure enough for password hashing.
+
+    */
+
 
 }

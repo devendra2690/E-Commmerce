@@ -1,11 +1,15 @@
 package com.online.buy.consumer.registration.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class ConsumerModel {
+
+    private Long consumerId;
 
     private String firstName;
 
@@ -13,6 +17,7 @@ public class ConsumerModel {
 
     private String email;
 
+    @JsonIgnore
     private String phoneNumber;
 
     private String password;
@@ -32,4 +37,6 @@ public class ConsumerModel {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+
+    private List<AddressModel> addressModelList;
 }

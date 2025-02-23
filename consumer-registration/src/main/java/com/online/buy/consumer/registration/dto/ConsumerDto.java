@@ -1,12 +1,22 @@
 package com.online.buy.consumer.registration.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
-import lombok.Data;
+import jakarta.validation.constraints.Size;
+import lombok.*;
 
-@Data
+import java.util.List;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class ConsumerDto {
+
+    @JsonProperty("id")
+    private Long consumerId;
 
     @NotNull(message = "First name can not be null")
     @JsonProperty("first_name")
@@ -21,10 +31,15 @@ public class ConsumerDto {
     private String email;
 
     @NotNull
-    @JsonProperty("phone")
+    @JsonProperty("phone_number")
     private String phoneNumber;
 
     @JsonProperty("password")
     @NotNull(message = "Email cannot be null")
     private String password;
+
+    @JsonProperty("address")
+    @Size(min = 1, message = "At least one address is required")
+    @Valid
+    private List<AddressDTO> addressList;
 }

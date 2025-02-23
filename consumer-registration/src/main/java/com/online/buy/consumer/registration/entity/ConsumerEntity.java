@@ -1,8 +1,12 @@
 package com.online.buy.consumer.registration.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "consumer")
@@ -56,4 +60,16 @@ public class ConsumerEntity {
 
     @Column(name = "updated_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
     private LocalDateTime updatedAt;
+
+    @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "consumer")
+    @JsonManagedReference
+    private List<AddressEntity> addresses;
+
+    public void addAddress(AddressEntity address) {
+        if(Objects.isNull(addresses)) {
+            addresses = new ArrayList<>();
+        }
+        addresses.add(address);
+        address.setConsumer(this);
+    }
 }

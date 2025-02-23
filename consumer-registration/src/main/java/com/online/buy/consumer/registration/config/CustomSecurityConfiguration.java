@@ -18,6 +18,7 @@ public class CustomSecurityConfiguration extends SecurityConfigAdapter {
         // Add paths that should not be covered by the Spring security
         // Example: list.add(new AntPathRequestMatcher("/login"));
         list.add(new AntPathRequestMatcher("/landing/**"));
+        list.add(new AntPathRequestMatcher("/consumer/**"));
         return list;
     }
 

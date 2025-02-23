@@ -15,9 +15,11 @@
         <module name="order-processor" />
         <module name="notification-processor" />
         <module name="inventory-processor" />
-        <module name="authentication-processor" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="authentication-processor" target="17" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
