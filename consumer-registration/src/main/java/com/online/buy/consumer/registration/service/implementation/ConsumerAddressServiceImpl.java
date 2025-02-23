@@ -8,6 +8,8 @@ import com.online.buy.consumer.registration.mapper.AddressMapper;
 import com.online.buy.consumer.registration.repository.AddressRepository;
 import com.online.buy.consumer.registration.repository.ConsumerRepository;
 import com.online.buy.consumer.registration.service.ConsumerAddressService;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -16,74 +18,64 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class ConsumerAddressServiceImpl implements ConsumerAddressService {
 
     private final ConsumerRepository consumerRepository;
     private final AddressRepository addressRepository;
 
-    public ConsumerAddressServiceImpl(ConsumerRepository consumerRepository, AddressRepository addressRepository) {
-        this.consumerRepository = consumerRepository;
-        this.addressRepository = addressRepository;
-    }
-
     @Override
-    public AddressModel registerConsumerAddress(Long consumerId, AddressModel addressModel) {
-
+    @Transactional
+    public AddressModel addAddressToConsumer(Long consumerId, AddressModel addressModel) {
         ConsumerEntity consumerEntity = getConsumerEntity(consumerId);
         AddressEntity addressEntity = new AddressEntity();
         AddressMapper.modelToEntity(addressModel, addressEntity);
         addressEntity.setConsumer(consumerEntity);
-        addressRepository.save(addressEntity);
-        return AddressMapper.entityToModel(addressEntity, addressModel);
+        addressEntity = addressRepository.save(addressEntity);
+        return AddressMapper.entityToModel(addressEntity, new AddressModel());
     }
 
     @Override
-    public List<AddressModel> findConsumerAddress(Long consumerId) {
+    public List<AddressModel> findAddressForConsumer(Long consumerId) {
         ConsumerEntity consumerEntity = getConsumerEntity(consumerId);
         return consumerEntity.getAddresses().stream()
                 .map(addressEntity -> AddressMapper.entityToModel(addressEntity, new AddressModel()))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
-    public AddressModel findConsumerAddress(Long consumerId, Long addressId) {
+    public AddressModel findAddressForConsumer(Long consumerId, Long addressId) {
         AddressEntity addressEntity = getAddressEntity(consumerId, addressId);
         return AddressMapper.entityToModel(addressEntity, new AddressModel());
     }
 
     @Override
-    public void deleteConsumerAddress(Long consumerId, Long addressId) {
+    @Transactional
+    public void deleteAddressForConsumer(Long consumerId, Long addressId) {
         AddressEntity addressEntity = getAddressEntity(consumerId, addressId);
         addressRepository.delete(addressEntity);
     }
 
-    private ConsumerEntity getConsumerEntity(Long consumerId) {
-        Optional<ConsumerEntity> consumerEntityOptional = consumerRepository.findById(consumerId);
-        if (consumerEntityOptional.isEmpty()) {
-            throw new DataNotFoundException(HttpStatus.NOT_FOUND,
-                    String.format("Consumer record not available for Consumer Id %s", consumerId),
-                    String.format("Consumer record not available for Consumer %s", consumerId));
-        }
+    @Override
+    @Transactional
+    public AddressModel updateAddressForConsumer(Long consumerId, Long addressId, AddressModel addressModel) {
+        AddressEntity addressEntity = getAddressEntity(consumerId, addressId);
+        AddressMapper.modelToEntity(addressModel, addressEntity);
+        return AddressMapper.entityToModel(addressRepository.save(addressEntity), new AddressModel());
+    }
 
-        return consumerEntityOptional.get();
+    private ConsumerEntity getConsumerEntity(Long consumerId) {
+        return consumerRepository.findById(consumerId)
+                .orElseThrow(() -> new DataNotFoundException(HttpStatus.NOT_FOUND,
+                        String.format("Consumer with ID %s not found", consumerId),
+                        String.format("Consumer not found for ID: %s", consumerId)));
     }
 
     private AddressEntity getAddressEntity(Long consumerId, Long addressId) {
-        ConsumerEntity consumerEntity = getConsumerEntity(consumerId);
-
-        return consumerEntity.getAddresses().stream()
-                .filter(address -> address.getAddressId().equals(addressId))
-                .findFirst()
+        return addressRepository.findById(addressId)
+                .filter(address -> address.getConsumer().getConsumerId().equals(consumerId))
                 .orElseThrow(() -> new DataNotFoundException(HttpStatus.NOT_FOUND,
-                        String.format("Address record not available for Consumer Id %s", consumerId),
-                        String.format("Address record not available for Consumer %s", consumerId)));
-    }
-
-    @Override
-    public AddressModel updateConsumerAddress(Long consumerId, Long addressId, AddressModel addressModel) {
-        AddressEntity addressEntity = getAddressEntity(consumerId, addressId);
-        AddressMapper.modelToEntity(addressModel, addressEntity);
-        addressRepository.save(addressEntity);
-        return AddressMapper.entityToModel(addressEntity, addressModel);
+                        String.format("Address with ID %s not found for Consumer ID %s", addressId, consumerId),
+                        String.format("Address not found for Consumer ID: %s", consumerId)));
     }
 }
