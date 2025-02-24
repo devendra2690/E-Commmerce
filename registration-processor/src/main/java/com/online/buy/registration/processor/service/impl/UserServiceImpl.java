@@ -1,24 +1,21 @@
-package com.buy.it.authorization.server.service;
+package com.online.buy.registration.processor.service.impl;
 
-import com.buy.it.authorization.server.entity.User;
-import com.buy.it.authorization.server.enums.Role;
-import com.buy.it.authorization.server.repository.UserRepository;
+import com.online.buy.registration.processor.entity.User;
+import com.online.buy.registration.processor.enums.Role;
+import com.online.buy.registration.processor.repository.UserRepository;
+import com.online.buy.registration.processor.service.UserService;
+import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
 @Service
-public class UserServiceImpl implements UserService{
+@AllArgsConstructor
+public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
-
 
     @Override
     public boolean authenticate(String username, String password) {

@@ -1,11 +1,11 @@
-package com.buy.it.authorization.server.dto;
+package com.online.buy.registration.processor.dto;
 
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class UserRegistrationRequest {
+public class UserRegistratiionDto {
     private String username;
     private String email;
     private String password;

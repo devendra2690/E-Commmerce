@@ -1,6 +1,7 @@
-package com.buy.it.authorization.server.service;
+package com.online.buy.registration.processor.service;
 
-import com.buy.it.authorization.server.entity.User;
+
+import com.online.buy.registration.processor.entity.User;
 
 public interface UserService {
     boolean authenticate(String username, String password);
