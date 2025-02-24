@@ -1,35 +1,40 @@
 package com.buy.it.authorization.server.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
-import java.util.Set;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
-@Table(name = "clients")
-@Getter
-@Setter
+@Table(name = "client")
+@Data
 @NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class Client {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
-    private String clientId;
-
     @Column(nullable = false)
-    private String clientSecret; // Hashed using BCrypt
+    private String name;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    private Set<String> grantTypes; // E.g., "authorization_code", "client_credentials"
+    @Column(nullable = false, unique = true)
+    private String email;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    private Set<String> redirectUris; // Required for authorization_code grant
+    @OneToOne(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private OAuth2Client oAuth2Client;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    private Set<String> scopes; // E.g., "read", "write"
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 }

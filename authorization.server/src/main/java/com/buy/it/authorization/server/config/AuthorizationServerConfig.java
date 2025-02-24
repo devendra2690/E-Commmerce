@@ -1,8 +1,8 @@
 package com.buy.it.authorization.server.config;
 
-import com.buy.it.authorization.server.entity.Client;
+import com.buy.it.authorization.server.entity.OAuth2Client;
 import com.buy.it.authorization.server.entity.OAuthKey;
-import com.buy.it.authorization.server.repository.ClientRepository;
+import com.buy.it.authorization.server.repository.OAuth2ClientRepository;
 import com.buy.it.authorization.server.repository.OAuthKeyRepository;
 import com.buy.it.authorization.server.repository.UserRepository;
 import com.buy.it.authorization.server.util.KeyUtil;
@@ -12,6 +12,7 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -45,8 +46,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Instant;
@@ -57,13 +56,10 @@ import java.util.stream.StreamSupport;
 
 @Configuration
 @EnableWebSecurity
+@AllArgsConstructor
 public class AuthorizationServerConfig {
 
     private final OAuthKeyRepository oAuthKeyRepository;
-
-    public AuthorizationServerConfig(OAuthKeyRepository oAuthKeyRepository) {
-        this.oAuthKeyRepository = oAuthKeyRepository;
-    }
 
     @Bean
     @Order(1)
@@ -130,13 +126,13 @@ public class AuthorizationServerConfig {
     }
 
     @Bean
-    public RegisteredClientRepository registeredClientRepository(ClientRepository clientRepository) {
+    public RegisteredClientRepository registeredClientRepository(OAuth2ClientRepository oAuth2ClientRepository) {
 
-        List<Client> clients = StreamSupport.stream(clientRepository.findAll().spliterator(), false)
+        List<OAuth2Client> clients = StreamSupport.stream(oAuth2ClientRepository.findAll().spliterator(), false)
                                              .toList();
 
         List<RegisteredClient> registeredClients = new ArrayList<>();
-        for (Client client : clients) {
+        for (OAuth2Client client : clients) {
             RegisteredClient registeredClient = RegisteredClient.withId(client.getId().toString())
                     .clientId(client.getClientId())
                     .clientName(client.getClientId())

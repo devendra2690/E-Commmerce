@@ -59,6 +59,12 @@
 			<version>1.18.24</version> <!-- Use the latest version -->
 			<scope>provided</scope>
 		</dependency>
+
+		<dependency>
+			<groupId>com.online.buy</groupId>
+			<artifactId>exception-processor</artifactId>
+			<version>1.0.0</version>
+		</dependency>
 	</dependencies>
 
 
