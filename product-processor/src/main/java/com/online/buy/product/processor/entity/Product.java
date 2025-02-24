@@ -2,6 +2,7 @@ package com.online.buy.product.processor.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -21,7 +22,7 @@ public class Product {
     @Column(nullable = false)
     private String name;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String description;
 
     @Column(nullable = false, precision = 10, scale = 2)
@@ -30,7 +31,7 @@ public class Product {
     @Column(nullable = false)
     private Integer quantity;
 
-    @Column(length = 100)
+    @Column(length = 100, nullable = false)
     private String category;
 
     @CreationTimestamp //Automatically sets the createdAt field when the entity is created.
