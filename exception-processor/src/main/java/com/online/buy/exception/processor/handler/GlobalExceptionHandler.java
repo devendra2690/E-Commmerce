@@ -65,8 +65,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ErrorResponse> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, WebRequest request) {
+    @Override
+    protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex
+                                                                 , HttpHeaders headers, HttpStatusCode status
+                                                                 , WebRequest request) {
         ErrorResponse errorResponse = new ErrorResponse(
                 Instant.now().toString(),
                 HttpStatus.BAD_REQUEST.value(),
@@ -77,9 +79,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(NoHandlerFoundException.class)
-    public ResponseEntity<ErrorResponse> handleNoHandlerFound(
-            NoHandlerFoundException ex, WebRequest request) {
+    @Override
+    protected ResponseEntity<Object> handleNoHandlerFoundException(NoHandlerFoundException ex
+                                                                  , HttpHeaders headers, HttpStatusCode status
+                                                                  , WebRequest request) {
         ErrorResponse errorResponse = new ErrorResponse(
                 Instant.now().toString(),
                 HttpStatus.NOT_FOUND.value(),
@@ -90,9 +93,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    public ResponseEntity<ErrorResponse> handleHttpRequestMethodNotSupported(
-            HttpRequestMethodNotSupportedException ex, WebRequest request) {
+
+    @Override
+    protected ResponseEntity<Object> handleHttpRequestMethodNotSupported(HttpRequestMethodNotSupportedException ex
+                                                                         , HttpHeaders headers, HttpStatusCode status
+                                                                         , WebRequest request) {
         ErrorResponse errorResponse = new ErrorResponse(
                 Instant.now().toString(),
                 HttpStatus.METHOD_NOT_ALLOWED.value(),
@@ -103,9 +108,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.METHOD_NOT_ALLOWED);
     }
 
-    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
-    public ResponseEntity<ErrorResponse> handleHttpMediaTypeNotSupported(
-            HttpMediaTypeNotSupportedException ex, WebRequest request) {
+
+    @Override
+    protected ResponseEntity<Object> handleHttpMediaTypeNotSupported(HttpMediaTypeNotSupportedException ex
+                                                                     , HttpHeaders headers, HttpStatusCode status
+                                                                     , WebRequest request) {
         ErrorResponse errorResponse = new ErrorResponse(
                 Instant.now().toString(),
                 HttpStatus.UNSUPPORTED_MEDIA_TYPE.value(),
@@ -155,9 +162,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.SERVICE_UNAVAILABLE);
     }
 
-    @ExceptionHandler(MissingServletRequestParameterException.class)
-    public ResponseEntity<ErrorResponse> handleMissingServletRequestParameter(
-            MissingServletRequestParameterException ex, WebRequest request) {
+
+    @Override
+    protected ResponseEntity<Object> handleMissingServletRequestParameter(MissingServletRequestParameterException ex
+                                                                          , HttpHeaders headers, HttpStatusCode status
+                                                                          , WebRequest request) {
         ErrorResponse errorResponse = new ErrorResponse(
                 Instant.now().toString(),
                 HttpStatus.BAD_REQUEST.value(),
