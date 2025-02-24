@@ -3,7 +3,10 @@ package com.online.buy.registration.processor.entity;
 import com.online.buy.registration.processor.enums.AccountStatus;
 import com.online.buy.registration.processor.enums.Role;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -11,11 +14,8 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "users")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class User {
 
     @Id
@@ -49,12 +49,11 @@ public class User {
     @Enumerated(EnumType.STRING)
     private AccountStatus accountStatus = AccountStatus.ACTIVE;  // Account status
 
-    private LocalDateTime createdAt = LocalDateTime.now();  // Record creation time
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;// Record creation time
 
-    private LocalDateTime updatedAt = LocalDateTime.now();  // Record update time
-
-    @PreUpdate
-    public void setUpdatedAt() {
-        this.updatedAt = LocalDateTime.now();
-    }
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;  // Record update time
 }
