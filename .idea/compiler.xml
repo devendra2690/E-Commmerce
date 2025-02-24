@@ -7,20 +7,21 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="consumer-registration" />
         <module name="payment-processor" />
         <module name="authorization.server" />
+        <module name="registration-processor" />
         <module name="exception-processor" />
         <module name="security-api" />
         <module name="shipping-processor" />
         <module name="order-processor" />
         <module name="notification-processor" />
         <module name="inventory-processor" />
-        <module name="product-processor" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="authentication-processor" target="17" />
+      <module name="consumer-registration" target="17" />
+      <module name="product-processor" target="17" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
@@ -34,6 +35,7 @@
       <module name="order-processor" options="-parameters" />
       <module name="payment-processor" options="-parameters" />
       <module name="product-processor" options="-parameters" />
+      <module name="registration-processor" options="-parameters" />
       <module name="security-api" options="-parameters" />
       <module name="shipping-processor" options="-parameters" />
     </option>
