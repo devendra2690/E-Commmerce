@@ -12,7 +12,6 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
@@ -31,7 +30,6 @@ import java.util.Optional;
 public class SecurityConfig {
 
     private final static Logger LOGGER = LogManager.getLogger(SecurityConfig.class);
-
 
     private final Optional<SecurityConfigurationAdapter> montovaSecurityConfigAdapter;
 
@@ -52,7 +50,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                 .csrf(AbstractHttpConfigurer::disable)
+                .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> {
                     auth.anyRequest().authenticated();
                 })
@@ -66,8 +64,11 @@ public class SecurityConfig {
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
-        grantedAuthoritiesConverter.setAuthorityPrefix("ROLE_"); // Prefix roles
+        // 🛠 Explicitly set the claim name to "roles" instead of "scope"
+        grantedAuthoritiesConverter.setAuthoritiesClaimName("roles");
 
+        // 🛠 Ensure roles have "ROLE_" prefix (Spring Security requires it)
+        grantedAuthoritiesConverter.setAuthorityPrefix("");
         JwtAuthenticationConverter authenticationConverter = new JwtAuthenticationConverter();
         authenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
 
@@ -76,16 +77,10 @@ public class SecurityConfig {
 
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
-        System.out.println("webSecurityCustomizer() bregin");
-
         return (web) -> {
 
             List<RequestMatcher> requestMatchers = new ArrayList<>();
-            System.out.println("webSecurityCustomizer() Started");
             if (montovaSecurityConfigAdapter.isPresent()) {
-                System.out.println("webSecurityCustomizer() Present");
-
-
                 final SecurityConfigurationAdapter montovaSecurityConfigurationAdapter = this.montovaSecurityConfigAdapter.get();
                 if (montovaSecurityConfigurationAdapter.includeDefaultPublicRequestMatchers()) {
                     getDefaultPublicRequestMatchers().forEach(e -> logConfiguring(e, "default"));
@@ -96,12 +91,8 @@ public class SecurityConfig {
             } else {
                 getDefaultPublicRequestMatchers().forEach(e -> logConfiguring(e, "default"));
                 requestMatchers.addAll(getDefaultPublicRequestMatchers());
-                System.out.println("webSecurityCustomizer() not Present");
 
             }
-
-            System.out.println("requestMatchers() requestMatchers "+requestMatchers.toArray());
-
             web.ignoring().requestMatchers("/ignore1", "/ignore2");
             web.ignoring().requestMatchers(requestMatchers.toArray(new RequestMatcher[0]));
         };

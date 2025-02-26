@@ -42,11 +42,9 @@ public class ClientServiceImpl implements ClientService {
 
 
     @Override
-    public ClientModel findByClientId(Long clientId) {
-/*
+    public ClientModel findByClientId(String clientId) {
         Client client = clientRepository.findByClientId(clientId).orElseThrow(() -> new NotFoundException("Client not found"));
-        return modelMapper.map(client, ClientModel.class);*/
-        return null;
+        return ClientMapper.clientToClientModelMapper(client, new ClientModel());
     }
 
     @Transactional

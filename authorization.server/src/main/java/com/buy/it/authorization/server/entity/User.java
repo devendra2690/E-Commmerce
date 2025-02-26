@@ -4,6 +4,8 @@ import com.buy.it.authorization.server.enums.AccountStatus;
 import com.buy.it.authorization.server.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -49,12 +51,15 @@ public class User {
     @Enumerated(EnumType.STRING)
     private AccountStatus accountStatus = AccountStatus.ACTIVE;  // Account status
 
-    private LocalDateTime createdAt = LocalDateTime.now();  // Record creation time
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;  // Record creation time
 
-    private LocalDateTime updatedAt = LocalDateTime.now();  // Record update time
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;  // Record update time
 
-    @PreUpdate
-    public void setUpdatedAt() {
-        this.updatedAt = LocalDateTime.now();
-    }
+    @ManyToOne
+    @JoinColumn(name = "client_id", nullable = false) // Foreign key to Client table
+    private Client client;
 }

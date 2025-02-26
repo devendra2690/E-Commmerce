@@ -16,6 +16,7 @@
         <module name="order-processor" />
         <module name="notification-processor" />
         <module name="inventory-processor" />
+        <module name="KeyGenerator" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>

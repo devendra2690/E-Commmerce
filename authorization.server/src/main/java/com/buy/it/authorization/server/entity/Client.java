@@ -30,6 +30,10 @@ public class Client {
     @JsonManagedReference
     private OAuth2Client oAuth2Client;
 
+    @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<User> user;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

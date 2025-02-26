@@ -6,7 +6,7 @@ public interface ClientService {
 
     ClientModel registerClient(ClientModel clientModel);
 
-    ClientModel findByClientId(Long clientId);
+    ClientModel findByClientId(String clientId);
 
     ClientModel findById(Long clientId);
 

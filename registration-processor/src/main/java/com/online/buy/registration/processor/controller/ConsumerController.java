@@ -1,3 +1,4 @@
+/*
 package com.online.buy.registration.processor.controller;
 
 import com.online.buy.registration.processor.dto.ConsumerDto;
@@ -40,4 +41,4 @@ public class ConsumerController {
         consumerService.deleteConsumer(consumerId);
         return ResponseEntity.ok("User deleted successfully!");
     }
-}
+}*/

@@ -1,10 +1,10 @@
 package com.buy.it.authorization.server.config;
 
-import com.buy.it.authorization.server.entity.OAuth2Client;
 import com.buy.it.authorization.server.entity.OAuthKey;
 import com.buy.it.authorization.server.repository.OAuth2ClientRepository;
 import com.buy.it.authorization.server.repository.OAuthKeyRepository;
 import com.buy.it.authorization.server.repository.UserRepository;
+import com.buy.it.authorization.server.service.DatabaseRegisteredClientRepository;
 import com.buy.it.authorization.server.util.KeyUtil;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.jwk.JWKSet;
@@ -15,44 +15,38 @@ import com.nimbusds.jose.proc.SecurityContext;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.core.AuthorizationGrantType;
-import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
-import org.springframework.security.oauth2.core.oidc.OidcScopes;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.server.authorization.JdbcOAuth2AuthorizationService;
+import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
 import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
-import org.springframework.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
-import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.StreamSupport;
+import java.util.Objects;
 
 @Configuration
 @EnableWebSecurity
@@ -88,6 +82,7 @@ public class AuthorizationServerConfig {
                                 new MediaTypeRequestMatcher(MediaType.TEXT_HTML) // This applies only for web browsers (MediaType.TEXT_HTML), API clients (Postman, curl) will still receive a 401 Unauthorized response.
                         )
                 );
+
         return http.build();
     }
 
@@ -108,8 +103,15 @@ public class AuthorizationServerConfig {
         return http.build();
     }
 
+
     @Bean
     public UserDetailsService userDetailsService(UserRepository userRepository) {
+
+
+
+        /*
+
+        This is how you can store User information InMemory, drawback is that it will fetched every time server restart and do not support dynamic user registration validation
 
         List<com.buy.it.authorization.server.entity.User> users = StreamSupport.stream(userRepository.findAll().spliterator(), false)
                                                                    .toList();
@@ -122,10 +124,56 @@ public class AuthorizationServerConfig {
                     .build());
         }
 
-        return new InMemoryUserDetailsManager(userDetails);
+        return new InMemoryUserDetailsManager(userDetails);*/
+
+        return username -> {
+            // Fetch the user only if they belong to the given client_id
+            com.buy.it.authorization.server.entity.User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+            return User.withUsername(user.getUsername())
+                    .password(user.getPasswordHash())
+                    .roles(String.valueOf(user.getRole()))
+                    .build();
+        };
     }
 
+    /*
+
+       OAuth2AuthorizationService : By default we OAuth2 Support Inmemrory and Jdbc, but we can also create our own implementation
+         InMemoryOAuth2AuthorizationService : This is how you can store Authorization information InMemory,
+         JdbcOAuth2AuthorizationService : Store auth data in DB. For this we will need table in db. Refer to oAuth-auth-service.sql under sql folder
+
+           OAuth2AuthorizationService is a Spring Security interface that stores and retrieves authorization details for OAuth2 flows.
+            It helps manage authorization codes, access tokens, refresh tokens, and authentication details for users and clients in an OAuth2 system.
+
+
+
+     */
+
     @Bean
+    public OAuth2AuthorizationService authorizationService(JdbcTemplate jdbcTemplate, RegisteredClientRepository clientRepository) {
+        return new JdbcOAuth2AuthorizationService(jdbcTemplate, clientRepository);
+    }
+
+    /*@Bean
+    public OAuth2AuthorizationService authorizationService() {
+        return new InMemoryOAuth2AuthorizationService();
+    }*/
+
+
+
+    @Bean
+    @Primary
+    public RegisteredClientRepository registeredClientRepository(OAuth2ClientRepository oAuth2ClientRepository) {
+        return new DatabaseRegisteredClientRepository(oAuth2ClientRepository);
+    }
+
+   /* @Bean
+
+
+     This is how you can store Client information InMemory, drawback is that it will fetched every time server restart and do not support dynamic Client registration validation
+
     public RegisteredClientRepository registeredClientRepository(OAuth2ClientRepository oAuth2ClientRepository) {
 
         List<OAuth2Client> clients = StreamSupport.stream(oAuth2ClientRepository.findAll().spliterator(), false)
@@ -151,22 +199,35 @@ public class AuthorizationServerConfig {
         }
 
         return new InMemoryRegisteredClientRepository(registeredClients);
-    }
+    }*/
 
     @Bean
     public OAuth2TokenCustomizer<JwtEncodingContext> tokenCustomizer() {
         return context -> {
             if (context.getTokenType().equals(OAuth2TokenType.ACCESS_TOKEN)) {
-                Authentication authentication = context.getPrincipal();
-                var authorities = authentication.getAuthorities()
-                        .stream()
-                        .map(GrantedAuthority::getAuthority)
-                        .toList();
-
-                context.getClaims().claim("roles", authorities); // Add roles claim
+                addRolesClaim(context);
+            }
+            if (context.get(RegisteredClient.class) != null) {
+                addClientIdClaim(context);
             }
         };
     }
+
+    private void addRolesClaim(JwtEncodingContext context) {
+        Authentication authentication = context.getPrincipal();
+        var authorities = authentication.getAuthorities()
+                .stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
+
+        context.getClaims().claim("roles", authorities);
+    }
+
+    private void addClientIdClaim(JwtEncodingContext context) {
+        context.getClaims().claim("client_id",
+                Objects.requireNonNull(context.get(RegisteredClient.class)).getId());
+    }
+
 
    /*
 
@@ -269,7 +330,7 @@ public class AuthorizationServerConfig {
 
    /*
 
-     Use this encoder in production because though Bcrypt isa powerful it expect plaintext when matching
+     Use this encoder in production because though Bcrypt is a powerful it expect plaintext when matching
      and we can not send client secret in plain text format
 
    private static final String SECRET_KEY = "some-random-secret"; // Server-side secret, should be in plain text

@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -18,6 +19,7 @@ public class RegisterClientController {
     private final ClientService clientService;
 
     @PostMapping("/register-client")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
     public ResponseEntity<String> registerClient(@RequestBody @Valid ClientDto clientDto) {
         ClientModel client = clientService.registerClient(ClientMapper.clientRequestDtoToClientModelMapper(clientDto, new ClientModel()));
         return ResponseEntity.ok("Client registered successfully with ID: " + client.getId());

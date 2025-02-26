@@ -1,10 +1,14 @@
 package com.online.buy.registration.processor.service.impl;
 
 import com.online.buy.exception.processor.model.NotFoundException;
+import com.online.buy.registration.processor.dto.UserRegistrationDto;
+import com.online.buy.registration.processor.entity.Client;
 import com.online.buy.registration.processor.entity.User;
 import com.online.buy.registration.processor.enums.AccountStatus;
 import com.online.buy.registration.processor.enums.Role;
+import com.online.buy.registration.processor.repository.ClientRepository;
 import com.online.buy.registration.processor.repository.UserRepository;
+import com.online.buy.registration.processor.service.ClientService;
 import com.online.buy.registration.processor.service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,6 +24,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ClientRepository clientRepository;
 
     @Override
     public boolean authenticate(String username, String password) {
@@ -34,7 +39,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User registerUser(String username, String email, String rawPassword, String role) {
+    public User registerUser(String username, String email, String rawPassword, String role, String clientId) {
 
         User user = new User();
         user.setUsername(username);
@@ -43,6 +48,9 @@ public class UserServiceImpl implements UserService {
         user.setRole(Role.valueOf(role.toUpperCase()));
         user.setAccountStatus(AccountStatus.ACTIVE);
         user.setLastLogin(LocalDateTime.now());
+
+        Client client = clientRepository.findByClientId(clientId).orElseThrow(() -> new NotFoundException("Client not found"));
+        user.setClient(client);
 
         return userRepository.save(user);
     }
@@ -66,5 +74,17 @@ public class UserServiceImpl implements UserService {
     @Override
     public User updateUser(User user) {
         return null;
+    }
+
+    @Override
+    public User registerClientUser(Long clientId, UserRegistrationDto userRegistrationDto) {
+
+        Client client = clientRepository.findById(clientId).orElseThrow(() -> new NotFoundException("Client not found"));
+        if(!client.getOAuth2Client().getClientId().equals(userRegistrationDto.getClientId())) {
+            throw new IllegalArgumentException("Client ID mismatch. Please provide correct client ID");
+        }
+
+        return registerUser(userRegistrationDto.getUsername(), userRegistrationDto.getEmail(), userRegistrationDto.getPassword()
+                , userRegistrationDto.getRole(), userRegistrationDto.getClientId());
     }
 }

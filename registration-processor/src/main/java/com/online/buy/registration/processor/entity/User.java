@@ -1,5 +1,6 @@
 package com.online.buy.registration.processor.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.online.buy.registration.processor.enums.AccountStatus;
 import com.online.buy.registration.processor.enums.Role;
 import jakarta.persistence.*;
@@ -56,4 +57,9 @@ public class User {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;  // Record update time
+
+    @ManyToOne
+    @JoinColumn(name = "client_id", nullable = false) // Foreign key to Client table
+    @JsonBackReference
+    private Client client;
 }
