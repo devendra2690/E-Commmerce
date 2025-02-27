@@ -12,6 +12,6 @@ import java.util.UUID;
 
 @Repository
 public interface AddressRepository extends CrudRepository<AddressEntity,Long> {
-    @Query("SELECT a FROM AddressEntity a WHERE a.addressHash= :addressHash and p.user.id = :userId")
+    @Query("SELECT a FROM AddressEntity a WHERE a.addressHash= :addressHash and a.user.id = :userId")
     Optional<AddressEntity> findByAddressHashAndUserId(@Param("addressHash") String addressHash, @Param("userId") UUID userId);
 }

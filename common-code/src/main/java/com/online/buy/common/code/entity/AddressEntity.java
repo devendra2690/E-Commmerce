@@ -29,5 +29,4 @@ public class AddressEntity {
     @JoinColumn(name = "user_id")
     @JsonBackReference
     private User user;
-
 }

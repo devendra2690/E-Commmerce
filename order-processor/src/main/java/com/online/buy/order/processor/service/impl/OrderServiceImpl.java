@@ -1,6 +1,7 @@
 package com.online.buy.order.processor.service.impl;
 
 import com.online.buy.common.code.entity.AddressEntity;
+import com.online.buy.common.code.entity.User;
 import com.online.buy.common.code.repository.AddressRepository;
 import com.online.buy.common.code.repository.ClientRepository;
 import com.online.buy.common.code.repository.ProductRepository;
@@ -13,6 +14,7 @@ import com.online.buy.order.processor.mapper.ShippingAddressMapper;
 import com.online.buy.order.processor.model.OrderModel;
 import com.online.buy.order.processor.model.ShippingDetailsModel;
 import com.online.buy.order.processor.service.OrderService;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
@@ -32,42 +34,46 @@ public class OrderServiceImpl implements OrderService {
     private final AddressRepository addressRepository;
     private final InventoryClient inventoryClient;
 
+    @Transactional
     @Override
     public void processOrder(OrderModel orderModel) {
 
         //validate user exits or not
-        userRepository.findById(UUID.fromString(orderModel.getUserId())).orElseThrow(() -> new NotFoundException("User does not exist"));
+        User user = userRepository.findById(UUID.fromString(orderModel.getUserId())).orElseThrow(() -> new NotFoundException("User does not exist"));
 
         // Validate client exists and combination or client and productId
         orderModel.getItems().stream().forEach(orderItemModel -> {
-            clientRepository.findById(orderModel.getOrderId()).orElseThrow(() -> new NotFoundException("Client does not exists"));
+
+            // validate client
+            clientRepository.findById(orderItemModel.getClientId()).orElseThrow(() -> new NotFoundException("Client does not exists"));
+
+            // validate client and product combination
             productRepository.findByProductIdAndClientId(orderItemModel.getProductId()
                     , orderItemModel.getClientId()).orElseThrow(() -> new NotFoundException("Combination of Product " + orderItemModel.getProductId() +
                     " and client " + orderItemModel.getClientId() + " does not exist"));
         });
 
         // validate if address exists for user if not add it
-        AddressEntity addressEntity = getOrCreateShippingDetails(orderModel.getShippingDetails(), orderModel.getUserId());
+        AddressEntity addressEntity = getOrCreateShippingDetails(orderModel.getShippingDetails(), user);
 
         //Validate Inventory is out of stock
         List<InventoryRequest> inventoryRequests = orderModel.getItems().stream().map(orderItemModel -> InventoryClientMapper.orderItemModelToInventoryRequest(orderItemModel, new InventoryRequest())).toList();
         Map<Long,String> inventoryValidateResult = inventoryClient.validateInventories(inventoryRequests);
 
-
-
     }
 
 
-    public AddressEntity getOrCreateShippingDetails(ShippingDetailsModel shippingDetailsModel, String userId) {
+    public AddressEntity getOrCreateShippingDetails(ShippingDetailsModel shippingDetailsModel, User user) {
         String normalizedHash = generateAddressHash(
                 shippingDetailsModel.getStreet1(), shippingDetailsModel.getStreet2(), shippingDetailsModel.getCity(),
                 shippingDetailsModel.getState(), shippingDetailsModel.getPostalCode(), shippingDetailsModel.getCountry()
         );
 
-        Optional<AddressEntity> existingDetails = addressRepository.findByAddressHashAndUserId(normalizedHash, UUID.fromString(userId));
+        Optional<AddressEntity> existingDetails = addressRepository.findByAddressHashAndUserId(normalizedHash, user.getId());
 
         return existingDetails.orElseGet(() -> {
             AddressEntity newDetails = ShippingAddressMapper.modelToEntity(shippingDetailsModel, new AddressEntity());
+            newDetails.setUser(user);
             newDetails.setAddressHash(normalizedHash);
             return addressRepository.save(newDetails);
         });

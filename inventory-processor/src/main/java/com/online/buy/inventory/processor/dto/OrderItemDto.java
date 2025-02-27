@@ -22,9 +22,5 @@ public class OrderItemDto {
     @JsonProperty("quantity")
     @Min(value = 1, message = "At least one quantity required")
     private int quantity;
-
-    @JsonProperty("price")
-    @DecimalMin(value = "1.0", inclusive = false, message = "Value should be greater than 1")
-    private double price;
 }
 
