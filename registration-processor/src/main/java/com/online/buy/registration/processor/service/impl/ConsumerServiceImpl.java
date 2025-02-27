@@ -1,10 +1,8 @@
 package com.online.buy.registration.processor.service.impl;
 
 import com.online.buy.exception.processor.model.NotFoundException;
-import com.online.buy.registration.processor.entity.ConsumerEntity;
 import com.online.buy.registration.processor.mapper.ConsumerMapper;
 import com.online.buy.registration.processor.model.ConsumerModel;
-import com.online.buy.registration.processor.repository.ConsumerRepository;
 import com.online.buy.registration.processor.service.ConsumerService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;

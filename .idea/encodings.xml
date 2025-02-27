@@ -5,6 +5,7 @@
     <file url="file://$PROJECT_DIR$/KeyGenerator/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/authentication-processor/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/authorization.server/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/common-code/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/consumer-registration/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/exception-processor/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/inventory-processor/src/main/java" charset="UTF-8" />

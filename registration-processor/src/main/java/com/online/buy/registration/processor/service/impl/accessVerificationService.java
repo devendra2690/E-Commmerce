@@ -1,7 +1,7 @@
 package com.online.buy.registration.processor.service.impl;
 
-import com.online.buy.registration.processor.entity.User;
-import com.online.buy.registration.processor.repository.UserRepository;
+import com.online.buy.common.code.entity.User;
+import com.online.buy.common.code.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;

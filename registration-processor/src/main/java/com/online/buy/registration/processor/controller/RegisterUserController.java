@@ -1,8 +1,8 @@
 package com.online.buy.registration.processor.controller;
 
 
+import com.online.buy.common.code.entity.User;
 import com.online.buy.registration.processor.dto.UserRegistrationDto;
-import com.online.buy.registration.processor.entity.User;
 import com.online.buy.registration.processor.service.UserService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;

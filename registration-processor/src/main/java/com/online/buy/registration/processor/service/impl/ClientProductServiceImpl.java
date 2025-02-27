@@ -1,12 +1,12 @@
 package com.online.buy.registration.processor.service.impl;
 
+import com.online.buy.common.code.entity.Client;
+import com.online.buy.common.code.entity.Product;
+import com.online.buy.common.code.repository.ClientRepository;
+import com.online.buy.common.code.repository.ProductRepository;
 import com.online.buy.exception.processor.model.NotFoundException;
-import com.online.buy.registration.processor.entity.Client;
-import com.online.buy.registration.processor.entity.Product;
 import com.online.buy.registration.processor.mapper.ProductMapper;
 import com.online.buy.registration.processor.model.ProductModel;
-import com.online.buy.registration.processor.repository.ClientRepository;
-import com.online.buy.registration.processor.repository.ProductRepository;
 import com.online.buy.registration.processor.service.ClientProductService;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;

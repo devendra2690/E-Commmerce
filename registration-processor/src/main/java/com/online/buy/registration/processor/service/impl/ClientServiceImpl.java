@@ -1,12 +1,12 @@
 package com.online.buy.registration.processor.service.impl;
 
+import com.online.buy.common.code.entity.Client;
+import com.online.buy.common.code.entity.OAuth2Client;
+import com.online.buy.common.code.repository.ClientRepository;
+import com.online.buy.common.code.repository.OAuth2ClientRepository;
 import com.online.buy.exception.processor.model.NotFoundException;
-import com.online.buy.registration.processor.entity.Client;
-import com.online.buy.registration.processor.entity.OAuth2Client;
 import com.online.buy.registration.processor.mapper.ClientMapper;
 import com.online.buy.registration.processor.model.ClientModel;
-import com.online.buy.registration.processor.repository.ClientRepository;
-import com.online.buy.registration.processor.repository.OAuth2ClientRepository;
 import com.online.buy.registration.processor.service.ClientService;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;

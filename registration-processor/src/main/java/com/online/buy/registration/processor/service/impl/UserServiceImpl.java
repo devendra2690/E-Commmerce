@@ -1,14 +1,13 @@
 package com.online.buy.registration.processor.service.impl;
 
+import com.online.buy.common.code.entity.Client;
+import com.online.buy.common.code.entity.User;
+import com.online.buy.common.code.enums.AccountStatus;
+import com.online.buy.common.code.enums.Role;
+import com.online.buy.common.code.repository.ClientRepository;
+import com.online.buy.common.code.repository.UserRepository;
 import com.online.buy.exception.processor.model.NotFoundException;
 import com.online.buy.registration.processor.dto.UserRegistrationDto;
-import com.online.buy.registration.processor.entity.Client;
-import com.online.buy.registration.processor.entity.User;
-import com.online.buy.registration.processor.enums.AccountStatus;
-import com.online.buy.registration.processor.enums.Role;
-import com.online.buy.registration.processor.repository.ClientRepository;
-import com.online.buy.registration.processor.repository.UserRepository;
-import com.online.buy.registration.processor.service.ClientService;
 import com.online.buy.registration.processor.service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;

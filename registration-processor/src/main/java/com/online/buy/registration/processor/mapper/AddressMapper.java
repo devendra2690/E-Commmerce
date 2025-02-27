@@ -1,7 +1,7 @@
 package com.online.buy.registration.processor.mapper;
 
+import com.online.buy.common.code.entity.AddressEntity;
 import com.online.buy.registration.processor.dto.AddressDTO;
-import com.online.buy.registration.processor.entity.AddressEntity;
 import com.online.buy.registration.processor.model.AddressModel;
 
 

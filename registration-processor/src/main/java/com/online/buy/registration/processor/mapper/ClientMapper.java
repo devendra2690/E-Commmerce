@@ -1,8 +1,8 @@
 package com.online.buy.registration.processor.mapper;
 
+import com.online.buy.common.code.entity.Client;
+import com.online.buy.common.code.entity.OAuth2Client;
 import com.online.buy.registration.processor.dto.ClientDto;
-import com.online.buy.registration.processor.entity.Client;
-import com.online.buy.registration.processor.entity.OAuth2Client;
 import com.online.buy.registration.processor.model.ClientModel;
 import com.online.buy.registration.processor.model.ProductModel;
 

@@ -10,6 +10,7 @@
         <module name="payment-processor" />
         <module name="authorization.server" />
         <module name="registration-processor" />
+        <module name="common-code" />
         <module name="exception-processor" />
         <module name="security-api" />
         <module name="shipping-processor" />
@@ -29,6 +30,7 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="authentication-processor" options="-parameters" />
       <module name="authorization.server" options="-parameters" />
+      <module name="common-code" options="-parameters" />
       <module name="consumer-registration" options="-parameters" />
       <module name="exception-processor" options="-parameters" />
       <module name="inventory-processor" options="-parameters" />

@@ -1,10 +1,10 @@
 package com.online.buy.registration.processor.service.impl;
 
+import com.online.buy.common.code.entity.Product;
+import com.online.buy.common.code.repository.ProductRepository;
 import com.online.buy.exception.processor.model.NotFoundException;
-import com.online.buy.registration.processor.entity.Product;
 import com.online.buy.registration.processor.mapper.ProductMapper;
 import com.online.buy.registration.processor.model.ProductModel;
-import com.online.buy.registration.processor.repository.ProductRepository;
 import com.online.buy.registration.processor.service.ProductService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;

@@ -1,7 +1,7 @@
 package com.online.buy.registration.processor.mapper;
 
+import com.online.buy.common.code.entity.Product;
 import com.online.buy.registration.processor.dto.ProductDto;
-import com.online.buy.registration.processor.entity.Product;
 import com.online.buy.registration.processor.model.ProductModel;
 
 public class ProductMapper {

@@ -17,6 +17,7 @@
         <option value="$PROJECT_DIR$/exception-processor/pom.xml" />
         <option value="$PROJECT_DIR$/registration-processor/pom.xml" />
         <option value="$PROJECT_DIR$/KeyGenerator/pom.xml" />
+        <option value="$PROJECT_DIR$/common-code/pom.xml" />
       </list>
     </option>
     <option name="ignoredFiles">

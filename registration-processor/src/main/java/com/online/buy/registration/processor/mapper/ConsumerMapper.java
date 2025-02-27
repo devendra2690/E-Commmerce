@@ -1,7 +1,6 @@
 package com.online.buy.registration.processor.mapper;
 
 import com.online.buy.registration.processor.dto.ConsumerDto;
-import com.online.buy.registration.processor.entity.ConsumerEntity;
 import com.online.buy.registration.processor.model.ConsumerModel;
 
 public class ConsumerMapper {
