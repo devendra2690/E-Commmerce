@@ -1,7 +1,6 @@
-package com.online.buy.inventory.processor.dto;
+package com.online.buy.common.code.dto.inventory;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -13,14 +12,23 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderItemDto {
+public class InventoryItemClientDto {
 
     @JsonProperty("productId")
     @NotNull(message = "ProductId can not be null")
     private Long productId;
 
+    @JsonProperty("reservationId")
+    private Long reservationId;
+
     @JsonProperty("quantity")
     @Min(value = 1, message = "At least one quantity required")
     private int quantity;
+
+    @JsonProperty("success")
+    private boolean success;
+
+    @JsonProperty("message")
+    private String message;
 }
 

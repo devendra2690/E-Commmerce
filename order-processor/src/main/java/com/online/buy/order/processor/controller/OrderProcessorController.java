@@ -21,8 +21,6 @@ public class OrderProcessorController {
 
     @PostMapping("/create-order")
     public ResponseEntity<OrderDto> createOrder(@RequestBody @Valid OrderDto orderDto) {
-        orderService.processOrder(OrderMapper.dtpToModel(orderDto, new OrderModel()));
-        return null;
+        return ResponseEntity.ok(OrderMapper.modelToDto(orderService.processOrder(OrderMapper.dtpToModel(orderDto, new OrderModel())), orderDto));
     }
-
 }

@@ -1,10 +1,7 @@
 package com.online.buy.order.processor.client;
 
-import com.online.buy.order.processor.client.dto.InventoryRequest;
-
-import java.util.List;
-import java.util.Map;
+import com.online.buy.common.code.dto.inventory.InventoryClientDto;
 
 public interface InventoryClient {
-    Map<Long,String> validateInventories(List<InventoryRequest> inventoryRequest);
+    InventoryClientDto validateInventories(InventoryClientDto inventoryClientDto);
 }

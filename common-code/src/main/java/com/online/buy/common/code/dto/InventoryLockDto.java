@@ -1,19 +1,21 @@
-package com.online.buy.order.processor.model;
+package com.online.buy.common.code.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class OrderItemModel {
+@Getter
+@Setter
+public class InventoryLockDto {
 
-    private Long id;
-    private Long clientId;
+    @JsonProperty
     private Long productId;
+
+    @JsonProperty
     private int quantity;
-    private double price;  // Price per unit
+
 }

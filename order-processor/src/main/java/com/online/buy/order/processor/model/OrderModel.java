@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -21,4 +22,5 @@ public class OrderModel {
     private List<OrderItemModel> items;  // List of products in the order
     private PaymentMode paymentMode;  // COD, UPI, Credit Card, etc.
     private ShippingDetailsModel shippingDetails; // Shipping details
+    private Map<Long, Map<String, Object>> additionalInfo;
 }

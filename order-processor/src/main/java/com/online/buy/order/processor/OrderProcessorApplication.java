@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @SpringBootApplication
 @ComponentScan("com.online.buy")
 @EntityScan("com.online.buy")
-@EnableJpaRepositories("com.online.buy.common.code.repository")
+@EnableJpaRepositories("com.online.buy")
 public class OrderProcessorApplication {
 
 	public static void main(String[] args) {

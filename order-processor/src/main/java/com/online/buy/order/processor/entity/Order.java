@@ -13,6 +13,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -55,4 +56,12 @@ public class Order {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
     private String createdBy;
+
+    public void addOrderItem(OrderItem orderItem) {
+        if(orderItems == null) {
+            orderItems = new ArrayList<>();
+        }
+        orderItems.add(orderItem);
+        orderItem.setOrder(this);
+    }
 }

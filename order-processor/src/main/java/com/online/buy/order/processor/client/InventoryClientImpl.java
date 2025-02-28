@@ -1,10 +1,10 @@
 package com.online.buy.order.processor.client;
 
-import com.online.buy.order.processor.client.dto.InventoryRequest;
+import com.online.buy.common.code.dto.inventory.InventoryItemClientDto;
+import com.online.buy.common.code.dto.inventory.InventoryClientDto;
 import com.online.buy.order.processor.config.ApplicationUrl;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
@@ -14,7 +14,6 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.List;
 import java.util.Map;
 
 @Component
@@ -33,17 +32,17 @@ public class InventoryClientImpl implements InventoryClient{
                     + "(#root instanceof T(org.springframework.web.client.HttpServerErrorException) && "
                     + "(#root.statusCode.value() == 503 || #root.statusCode.value() == 502))}"
     )
-    public Map<Long, String> validateInventories(@Valid List<InventoryRequest> inventoryRequest) {
+    public InventoryClientDto validateInventories(@Valid InventoryClientDto inventoryClientDto) {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        HttpEntity<List<InventoryRequest>> entity = new HttpEntity<>(inventoryRequest, headers);
-        ResponseEntity<Map<Long, String>> response = restTemplate.exchange(
+        HttpEntity<InventoryClientDto> entity = new HttpEntity<>(inventoryClientDto, headers);
+        ResponseEntity<InventoryClientDto> response = restTemplate.exchange(
                 applicationUrl.getInventoryValidate(),
                 HttpMethod.POST,
                 entity,
-                new ParameterizedTypeReference<Map<Long, String>>() {}
+                InventoryClientDto.class
         );
 
         // ✅ **Handle HTTP response codes**
@@ -59,7 +58,7 @@ public class InventoryClientImpl implements InventoryClient{
     }
 
     @Recover
-    public Map<Long, String> fallbackForValidateInventory(Exception e, List<InventoryRequest> inventoryRequest) {
+    public Map<Long, String> fallbackForValidateInventory(Exception e, InventoryItemClientDto inventoryItemClientDto) {
         System.out.println("All retries failed: " + e.getMessage());
         return Map.of(); // Return empty map as fallback
     }

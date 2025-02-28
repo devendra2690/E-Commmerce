@@ -12,6 +12,9 @@ import lombok.*;
 @AllArgsConstructor
 public class OrderItemDto {
 
+    @JsonProperty("id")
+    private Long id;
+
     @JsonProperty("clientId")
     @NotNull(message = "ClientId can not be null")
     private Long clientId;

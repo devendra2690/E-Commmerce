@@ -1,13 +1,13 @@
 package com.online.buy.order.processor.mapper;
 
-import com.online.buy.order.processor.client.dto.InventoryRequest;
+import com.online.buy.common.code.dto.inventory.InventoryItemClientDto;
 import com.online.buy.order.processor.model.OrderItemModel;
 
 public class InventoryClientMapper {
 
-    public static InventoryRequest orderItemModelToInventoryRequest(OrderItemModel orderItemModel, InventoryRequest inventoryRequest) {
-        inventoryRequest.setProductId(orderItemModel.getProductId());
-        inventoryRequest.setQuantity(orderItemModel.getQuantity());
-        return inventoryRequest;
+    public static InventoryItemClientDto orderItemModelToInventoryRequest(OrderItemModel orderItemModel, InventoryItemClientDto inventoryItemClientDto) {
+        inventoryItemClientDto.setProductId(orderItemModel.getProductId());
+        inventoryItemClientDto.setQuantity(orderItemModel.getQuantity());
+        return inventoryItemClientDto;
     }
 }

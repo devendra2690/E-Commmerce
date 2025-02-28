@@ -61,6 +61,13 @@
 			<version>1.0.1</version>
 			<scope>compile</scope>  <!-- Default is compile, so it's available everywhere -->
 		</dependency>
+
+		<dependency>
+			<groupId>com.online.buy</groupId>
+			<artifactId>common-code</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>

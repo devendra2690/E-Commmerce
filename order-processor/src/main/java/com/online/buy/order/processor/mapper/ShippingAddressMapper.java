@@ -28,4 +28,26 @@ public class ShippingAddressMapper {
         addressEntity.setCountry(shippingDetailsDto.getCountry());
         return addressEntity;
     }
+
+    public static ShippingDetailsModel entityToModel(AddressEntity addressEntity, ShippingDetailsModel shippingDetailsDto) {
+        shippingDetailsDto.setStreet1(addressEntity.getStreet1());
+        shippingDetailsDto.setStreet2(addressEntity.getStreet2());
+        shippingDetailsDto.setLandmark(addressEntity.getLandmark());
+        shippingDetailsDto.setCity(addressEntity.getCity());
+        shippingDetailsDto.setPostalCode(addressEntity.getPostalCode());
+        shippingDetailsDto.setState(addressEntity.getState());
+        shippingDetailsDto.setCountry(addressEntity.getCountry());
+        return shippingDetailsDto;
+    }
+
+    public static ShippingDetailsDto modelToDto(ShippingDetailsModel shippingDetailsModel, ShippingDetailsDto shippingDetailsDto) {
+        shippingDetailsDto.setStreet1(shippingDetailsModel.getStreet1());
+        shippingDetailsDto.setStreet2(shippingDetailsModel.getStreet2());
+        shippingDetailsDto.setLandmark(shippingDetailsModel.getLandmark());
+        shippingDetailsDto.setCity(shippingDetailsModel.getCity());
+        shippingDetailsDto.setPostalCode(shippingDetailsModel.getPostalCode());
+        shippingDetailsDto.setState(shippingDetailsModel.getState());
+        shippingDetailsDto.setCountry(shippingDetailsModel.getCountry());
+        return shippingDetailsDto;
+    }
 }

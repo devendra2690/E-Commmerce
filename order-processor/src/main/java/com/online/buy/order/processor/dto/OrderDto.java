@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -37,5 +38,7 @@ public class OrderDto {
     @JsonProperty("shippingDetails")
     @Valid
     private ShippingDetailsDto shippingDetails; // Shipping details
+
+    private Map<Long, Map<String, Object>> additionalInfo;
 }
 
