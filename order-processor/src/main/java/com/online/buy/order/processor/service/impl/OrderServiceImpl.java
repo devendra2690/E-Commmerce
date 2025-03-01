@@ -1,12 +1,13 @@
 package com.online.buy.order.processor.service.impl;
 
-import com.online.buy.common.code.dto.inventory.InventoryItemClientDto;
 import com.online.buy.common.code.dto.inventory.InventoryClientDto;
+import com.online.buy.common.code.dto.inventory.InventoryItemClientDto;
 import com.online.buy.common.code.entity.AddressEntity;
 import com.online.buy.common.code.entity.Client;
 import com.online.buy.common.code.entity.Product;
 import com.online.buy.common.code.entity.User;
-import com.online.buy.common.code.repository.*;
+import com.online.buy.common.code.repository.ClientRepository;
+import com.online.buy.common.code.repository.ProductRepository;
 import com.online.buy.exception.processor.model.NotFoundException;
 import com.online.buy.order.processor.client.InventoryClient;
 import com.online.buy.order.processor.entity.Order;
@@ -15,153 +16,112 @@ import com.online.buy.order.processor.enums.OrderStatus;
 import com.online.buy.order.processor.mapper.InventoryClientMapper;
 import com.online.buy.order.processor.mapper.OrderItemMapper;
 import com.online.buy.order.processor.mapper.OrderMapper;
-import com.online.buy.order.processor.mapper.ShippingAddressMapper;
 import com.online.buy.order.processor.model.OrderModel;
 import com.online.buy.order.processor.model.ShippingDetailsModel;
 import com.online.buy.order.processor.repository.OrderRepository;
-import com.online.buy.order.processor.service.OrderService;
+import com.online.buy.order.processor.service.*;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.DigestUtils;
 import org.springframework.web.client.HttpServerErrorException;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
 public class OrderServiceImpl implements OrderService {
 
-    private final UserRepository userRepository;
-    private final ClientRepository clientRepository;
-    private final ProductRepository productRepository;
-    private final AddressRepository addressRepository;
+    private final UserService userService;
+    private final ClientService clientService;
+    private final ProductService productService;
+    private final AddressService addressService;
     private final InventoryClient inventoryClient;
     private final OrderRepository orderRepository;
-    private final ReservationRepository reservationRepository;
+    private final ReservationService reservationService;
 
+    @Transactional
     @Override
     public OrderModel processOrder(OrderModel orderModel) {
-        User user = fetchUserIfExists(orderModel.getUserId());
-        List<OrderItem> orderItems = validateClientAndProductCombination(orderModel);
-        AddressEntity addressEntity = getOrCreateShippingDetails(orderModel.getShippingDetails(), user);
-        Map<String, Object> inventoryClientErrorMap = checkInventoryAvailable(orderModel);
 
-        Order order = prepareOrder(orderModel, user,addressEntity );
-        Map<Long, Map<String, Object>> errorMap = (Map<Long, Map<String, Object>>)inventoryClientErrorMap.get("errorMap");
+        // validate user
+        User user = userService.findById(orderModel.getUserId());
+
+        // validate product and client combination
+        List<OrderItem> orderItems = validateClientProductMapping(orderModel);
+
+        // decide to create new address or not using addressHash
+        AddressEntity addressEntity = getOrCreateShippingAddress(orderModel.getShippingDetails(), user);
+
+        // validate inventory
+        Map<String, Object> inventoryCheckResult = checkInventoryAvailability(orderModel);
+        @SuppressWarnings("unchecked")
+        Map<Long, Map<String, Object>> errorMap = (Map<Long, Map<String, Object>>) inventoryCheckResult.get("errorMap");
+
+        Order order = createOrder(orderModel, user, addressEntity);
+
+        // filter out order item which is either out of stock or reservation already exist for it (Likely duplicate order)
         orderItems.stream()
                 .filter(orderItem -> !errorMap.containsKey(orderItem.getProduct().getId()))
                 .forEach(order::addOrderItem);
 
         try {
-            if(!Objects.isNull(order.getOrderItems()) && !CollectionUtils.isEmpty(order.getOrderItems())) {
+            if (!CollectionUtils.isEmpty(order.getOrderItems())) {
                 orderRepository.save(order);
             }
         } catch (Exception exception) {
-            InventoryClientDto inventoryClientDto = (InventoryClientDto) inventoryClientErrorMap.get("inventoryClientDto");
-            for (InventoryItemClientDto inventoryItemClientDto : inventoryClientDto.getInventoryItemClientDtos()) {
-                if(inventoryItemClientDto.getReservationId() != null) {
-                    reservationRepository.deleteById(inventoryItemClientDto.getReservationId());
-                }
-            }
-            // Log the exception (optional)
-            // logger.error("Error while saving the Order, reverting back reservation", exception);
-            throw new HttpServerErrorException(HttpStatusCode.valueOf(500), "Error while saving the Order, reverting back reservation");
+            rollbackInventoryReservations(inventoryCheckResult);
+            throw new HttpServerErrorException(HttpStatusCode.valueOf(500), "Error while saving order, reverting reservations");
         }
-        //map response
-        OrderMapper.entityToModel(order,orderModel);
+
         orderModel.setAdditionalInfo(errorMap);
-
-        return OrderMapper.entityToModel(order,orderModel);
+        return OrderMapper.entityToModel(order, orderModel);
     }
 
-    private User fetchUserIfExists(String userId) {
-        return userRepository.findById(UUID.fromString(userId))
-                .orElseThrow(() -> new NotFoundException("User does not exist"));
+    private Map<String, Object> checkInventoryAvailability(OrderModel orderModel) {
+        InventoryClientDto inventoryRequest = new InventoryClientDto();
+        inventoryRequest.setUserId(orderModel.getUserId());
+        inventoryRequest.setInventoryItemClientDtos(orderModel.getItems().stream()
+                .map(item -> InventoryClientMapper.orderItemModelToInventoryRequest(item, new InventoryItemClientDto()))
+                .collect(Collectors.toList()));
+
+        InventoryClientDto response = inventoryClient.validateInventories(inventoryRequest);
+
+        Map<Long, Map<String, Object>> errorMap = response.getInventoryItemClientDtos().stream()
+                .filter(item -> !item.isSuccess())
+                .collect(Collectors.toMap(
+                        InventoryItemClientDto::getProductId,
+                        item -> Map.of(
+                                "message", item.getMessage(),
+                                "productId", item.getProductId()
+                        )
+                ));
+
+        return Map.of("inventoryClientDto", response, "errorMap", errorMap);
     }
 
-    private Map<String, Object> checkInventoryAvailable(OrderModel orderModel) {
-            InventoryClientDto inventoryClientDto = new InventoryClientDto();
-            inventoryClientDto.setUserId(orderModel.getUserId());
-            inventoryClientDto.setInventoryItemClientDtos(orderModel.getItems().stream()
-                    .map(orderItemModel -> InventoryClientMapper.orderItemModelToInventoryRequest(orderItemModel, new InventoryItemClientDto()))
-                    .collect(Collectors.toList()));
+    private List<OrderItem> validateClientProductMapping(OrderModel orderModel) {
+        return orderModel.getItems().stream().map(item -> {
 
-            InventoryClientDto responseObject = inventoryClient.validateInventories(inventoryClientDto);
-            Map<Long, Map<String, Object>> errorMap = responseObject.getInventoryItemClientDtos().stream()
-                    .filter(inventoryItemRequestDto -> !inventoryItemRequestDto.isSuccess())
-                    .collect(Collectors.toMap(
-                            InventoryItemClientDto::getProductId,
-                            inventoryItemRequestDto -> {
-                                Map<String, Object> inventoryMap = new HashMap<>();
-                                inventoryMap.put("message", inventoryItemRequestDto.getMessage());
-                                inventoryMap.put("productId", inventoryItemRequestDto.getProductId());
-                                inventoryMap.put("reservationId", inventoryItemRequestDto.getReservationId());
-                                return inventoryMap;
-                            }
-                    ));
+            Client client = clientService.findById(item.getClientId());
+            Product product = productService.findByProductIdAndClientId(item.getProductId(), item.getClientId());
 
-            Map<String, Object> result = new HashMap<>();
-            result.put("inventoryClientDto", responseObject);
-            result.put("errorMap", errorMap);
-            return result;
-        }
-
-    private List<OrderItem> validateClientAndProductCombination(OrderModel orderModel) {
-        return orderModel.getItems().stream()
-                .map(orderItemModel -> {
-                    Client client = clientRepository.findById(orderItemModel.getClientId())
-                            .orElseThrow(() -> new NotFoundException("Client does not exist"));
-                    Product product = productRepository.findByProductIdAndClientId(orderItemModel.getProductId(), orderItemModel.getClientId())
-                            .orElseThrow(() -> new NotFoundException("Combination of Product and Client does not exist"));
-                    OrderItem orderItem = new OrderItem();
-                    orderItem.setClient(client);
-                    orderItem.setProduct(product);
-                    OrderItemMapper.itemModelToEntity(orderItemModel, orderItem);
-                    return orderItem;
-                })
-                .collect(Collectors.toList());
+            OrderItem orderItem = new OrderItem();
+            orderItem.setClient(client);
+            orderItem.setProduct(product);
+            OrderItemMapper.itemModelToEntity(item, orderItem);
+            return orderItem;
+        }).collect(Collectors.toList());
     }
 
-    private AddressEntity getOrCreateShippingDetails(ShippingDetailsModel shippingDetailsModel, User user) {
-        String normalizedHash = generateAddressHash(
-                shippingDetailsModel.getStreet1(), shippingDetailsModel.getStreet2(), shippingDetailsModel.getCity(),
-                shippingDetailsModel.getState(), shippingDetailsModel.getPostalCode(), shippingDetailsModel.getCountry()
-        );
-
-        return addressRepository.findByAddressHashAndUserId(normalizedHash, user.getId())
-                .orElseGet(() -> {
-                    AddressEntity newDetails = ShippingAddressMapper.modelToEntity(shippingDetailsModel, new AddressEntity());
-                    newDetails.setUser(user);
-                    newDetails.setAddressHash(normalizedHash);
-                    return addressRepository.save(newDetails);
-                });
+    private AddressEntity getOrCreateShippingAddress(ShippingDetailsModel shippingDetails, User user) {
+        return addressService.saveAddressEntity(shippingDetails,user,null,null);
     }
 
-    private String generateAddressHash(String street1, String street2, String city, String state, String postalCode, String country) {
-        String normalizedAddress = normalizeStreet(street1) + "|" +
-                normalizeStreet(street2) + "|" +
-                city.toLowerCase().trim() + "|" +
-                state.toLowerCase().trim() + "|" +
-                postalCode.trim() + "|" +
-                country.toLowerCase().trim();
-        return DigestUtils.md5DigestAsHex(normalizedAddress.getBytes());
-    }
-
-    private String normalizeStreet(String street) {
-        if (street == null) return "";
-        return street.toLowerCase().trim()
-                .replace(" street", " st.")
-                .replace(" road", " rd.")
-                .replace(" avenue", " ave.")
-                .replace(" boulevard", " blvd.")
-                .replace(" lane", " ln.")
-                .replace(" drive", " dr.");
-    }
-
-    private static Order prepareOrder(OrderModel orderModel, User user, AddressEntity addressEntity) {
+    private Order createOrder(OrderModel orderModel, User user, AddressEntity addressEntity) {
         Order order = new Order();
         order.setUser(user);
         order.setEmail(orderModel.getEmail());
@@ -169,5 +129,13 @@ public class OrderServiceImpl implements OrderService {
         order.setAddressEntity(addressEntity);
         order.setPaymentMode(orderModel.getPaymentMode());
         return order;
+    }
+
+    private void rollbackInventoryReservations(Map<String, Object> inventoryCheckResult) {
+        InventoryClientDto inventoryClientDto = (InventoryClientDto) inventoryCheckResult.get("inventoryClientDto");
+        List<Long> reservationIds = inventoryClientDto.getInventoryItemClientDtos().stream()
+                .map(InventoryItemClientDto::getReservationId)
+                .toList();
+        reservationService.rollbackReservation(reservationIds);
     }
 }
