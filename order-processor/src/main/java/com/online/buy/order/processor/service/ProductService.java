@@ -4,4 +4,5 @@ import com.online.buy.common.code.entity.Product;
 
 public interface ProductService {
     Product findByProductIdAndClientId(Long productId,Long clientId);
+    void updateInventory(Long productId, int quantity);
 }

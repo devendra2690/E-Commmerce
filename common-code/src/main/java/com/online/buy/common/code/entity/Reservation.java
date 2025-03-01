@@ -2,6 +2,7 @@ package com.online.buy.common.code.entity;
 
 import com.online.buy.common.code.enums.ReservationStatus;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -11,11 +12,12 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "reservation", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"userId", "productId", "quantity", "status"})
+        @UniqueConstraint(columnNames = {"createdAt","userId", "productId", "quantity", "status"})
 })
 @NoArgsConstructor
 @Getter
 @Setter
+@AllArgsConstructor
 public class Reservation {
 
     @Id
