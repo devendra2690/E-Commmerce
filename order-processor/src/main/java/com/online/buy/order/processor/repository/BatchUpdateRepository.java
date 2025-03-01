@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.CollectionUtils;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -53,34 +54,36 @@ public class BatchUpdateRepository {
         log.info("Reservations marked as INACTIVE: {}", updatedReservations.stream().map(Reservation::getId).toList());
 
 
+        if(!CollectionUtils.isEmpty(updatedReservations)) {
 
-        String productQuantityUpdate = """
+            String productQuantityUpdate = """
                                         UPDATE public.product\s
                                         SET quantity = quantity + ?, updated_at = ?\s
                                         WHERE id = ?
                                    \s""";
 
-        jdbcTemplate.batchUpdate(productQuantityUpdate, new BatchPreparedStatementSetter() {
+            jdbcTemplate.batchUpdate(productQuantityUpdate, new BatchPreparedStatementSetter() {
 
-            @Override
-            public void setValues(PreparedStatement ps, int i) throws SQLException {
-                int addedQuantity = updatedReservations.get(i).getQuantity();
-                long productId = updatedReservations.get(i).getProductId();
-                Timestamp updateTime = Timestamp.valueOf(LocalDateTime.now());
+                @Override
+                public void setValues(PreparedStatement ps, int i) throws SQLException {
+                    int addedQuantity = updatedReservations.get(i).getQuantity();
+                    long productId = updatedReservations.get(i).getProductId();
+                    Timestamp updateTime = Timestamp.valueOf(LocalDateTime.now());
 
-                ps.setInt(1, addedQuantity);
-                ps.setTimestamp(2, updateTime);
-                ps.setLong(3, productId);
+                    ps.setInt(1, addedQuantity);
+                    ps.setTimestamp(2, updateTime);
+                    ps.setLong(3, productId);
 
-                // ✅ Log the update details
-                log.info("Updating Product ID: {}, Adding Quantity: {}, Timestamp: {}", productId, addedQuantity, updateTime);
-            }
+                    // ✅ Log the update details
+                    log.info("Updating Product ID: {}, Adding Quantity: {}, Timestamp: {}", productId, addedQuantity, updateTime);
+                }
 
-            @Override
-            public int getBatchSize() {
-                return updatedReservations.size();
-            }
-        });
+                @Override
+                public int getBatchSize() {
+                    return updatedReservations.size();
+                }
+            });
+        }
     }
 }
 
