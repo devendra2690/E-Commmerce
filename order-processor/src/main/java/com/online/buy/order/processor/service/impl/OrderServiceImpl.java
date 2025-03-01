@@ -6,13 +6,12 @@ import com.online.buy.common.code.entity.AddressEntity;
 import com.online.buy.common.code.entity.Client;
 import com.online.buy.common.code.entity.Product;
 import com.online.buy.common.code.entity.User;
-import com.online.buy.common.code.repository.ClientRepository;
-import com.online.buy.common.code.repository.ProductRepository;
-import com.online.buy.exception.processor.model.NotFoundException;
+import com.online.buy.order.processor.client.InventoryCheckResult;
 import com.online.buy.order.processor.client.InventoryClient;
 import com.online.buy.order.processor.entity.Order;
 import com.online.buy.order.processor.entity.OrderItem;
 import com.online.buy.order.processor.enums.OrderStatus;
+import com.online.buy.order.processor.exception.OrderProcessingException;
 import com.online.buy.order.processor.mapper.InventoryClientMapper;
 import com.online.buy.order.processor.mapper.OrderItemMapper;
 import com.online.buy.order.processor.mapper.OrderMapper;
@@ -22,10 +21,8 @@ import com.online.buy.order.processor.repository.OrderRepository;
 import com.online.buy.order.processor.service.*;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.client.HttpServerErrorException;
 
 import java.util.List;
 import java.util.Map;
@@ -57,15 +54,12 @@ public class OrderServiceImpl implements OrderService {
         AddressEntity addressEntity = getOrCreateShippingAddress(orderModel.getShippingDetails(), user);
 
         // validate inventory
-        Map<String, Object> inventoryCheckResult = checkInventoryAvailability(orderModel);
-        @SuppressWarnings("unchecked")
-        Map<Long, Map<String, Object>> errorMap = (Map<Long, Map<String, Object>>) inventoryCheckResult.get("errorMap");
-
+        InventoryCheckResult inventoryCheckResult = checkInventoryAvailability(orderModel);
         Order order = createOrder(orderModel, user, addressEntity);
 
         // filter out order item which is either out of stock or reservation already exist for it (Likely duplicate order)
         orderItems.stream()
-                .filter(orderItem -> !errorMap.containsKey(orderItem.getProduct().getId()))
+                .filter(orderItem -> !inventoryCheckResult.getErrorMap().containsKey(orderItem.getProduct().getId()))
                 .forEach(order::addOrderItem);
 
         try {
@@ -73,15 +67,17 @@ public class OrderServiceImpl implements OrderService {
                 orderRepository.save(order);
             }
         } catch (Exception exception) {
-            rollbackInventoryReservations(inventoryCheckResult);
-            throw new HttpServerErrorException(HttpStatusCode.valueOf(500), "Error while saving order, reverting reservations");
+            if (!CollectionUtils.isEmpty(order.getOrderItems())) {
+                rollbackInventoryReservations(inventoryCheckResult);
+            }
+            throw new OrderProcessingException("Error while saving order, reverting reservations", exception);
         }
 
-        orderModel.setAdditionalInfo(errorMap);
+        orderModel.setAdditionalInfo(inventoryCheckResult.getErrorMap());
         return OrderMapper.entityToModel(order, orderModel);
     }
 
-    private Map<String, Object> checkInventoryAvailability(OrderModel orderModel) {
+    private InventoryCheckResult checkInventoryAvailability(OrderModel orderModel) {
         InventoryClientDto inventoryRequest = new InventoryClientDto();
         inventoryRequest.setUserId(orderModel.getUserId());
         inventoryRequest.setInventoryItemClientDtos(orderModel.getItems().stream()
@@ -100,7 +96,7 @@ public class OrderServiceImpl implements OrderService {
                         )
                 ));
 
-        return Map.of("inventoryClientDto", response, "errorMap", errorMap);
+        return new InventoryCheckResult(response, errorMap);
     }
 
     private List<OrderItem> validateClientProductMapping(OrderModel orderModel) {
@@ -131,9 +127,8 @@ public class OrderServiceImpl implements OrderService {
         return order;
     }
 
-    private void rollbackInventoryReservations(Map<String, Object> inventoryCheckResult) {
-        InventoryClientDto inventoryClientDto = (InventoryClientDto) inventoryCheckResult.get("inventoryClientDto");
-        List<Long> reservationIds = inventoryClientDto.getInventoryItemClientDtos().stream()
+    private void rollbackInventoryReservations(InventoryCheckResult inventoryCheckResult) {
+        List<Long> reservationIds = inventoryCheckResult.getInventoryClientDto().getInventoryItemClientDtos().stream()
                 .map(InventoryItemClientDto::getReservationId)
                 .toList();
         reservationService.rollbackReservation(reservationIds);
