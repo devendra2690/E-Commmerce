@@ -6,7 +6,7 @@ import com.online.buy.order.processor.entity.Order;
 
 public class PaymentDetailsMapper {
 
-    public static PaymentMessageDto mapOrderDtoToPaymentDto(Order order, PaymentMessageDto paymentMessageDto) {
+    /*public static PaymentMessageDto mapOrderDtoToPaymentDto(Order order, PaymentMessageDto paymentMessageDto) {
 
         paymentMessageDto.setOrderId(order.getId());
         paymentMessageDto.setPaymentMode(order.getPaymentMode().toString());
@@ -26,5 +26,5 @@ public class PaymentDetailsMapper {
         }).toList());
 
         return paymentMessageDto;
-    }
+    }*/
 }

@@ -72,7 +72,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User updateUser(User user) {
-        return null;
+        if(user == null || user.getId() == null) {
+            // thro exception
+            throw new NotFoundException("User not found");
+        }
+        return userRepository.save(user);
     }
 
     @Override

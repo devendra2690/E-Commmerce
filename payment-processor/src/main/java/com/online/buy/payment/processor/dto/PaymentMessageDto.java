@@ -1,34 +1,25 @@
 package com.online.buy.payment.processor.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.List;
 
 @Data
+@AllArgsConstructor
 public class PaymentMessageDto {
 
-    @JsonProperty("orderId")
-    @NotNull(message = "Payment Mode can not be null")
-    private Long orderId;
+    @JsonProperty("customerId")
+    @NotNull(message = "Customer Id  can not be null")
+    private String customerId;
 
-    @JsonProperty("userId")
-    @NotNull(message = "User Id cannot be null")
-    private String userId;         // ID of the buyer
+    @JsonProperty("amount")
+    @NotNull(message = "Amount cannot be null")
+    private Long amount;
 
-    @JsonProperty("email")
-    @NotNull(message = "email cannot be null")
-    private String email;          // Buyer's email
-
-    @JsonProperty("items")
-    @Size(min=1, message="At least one order should be places")
-    @Valid
-    private List<OrderItemDto> items;  // List of products in the order
-
-    @JsonProperty("paymentMode")
-    @NotNull(message = "Payment Mode can not be null")
-    private String paymentMode;  // COD, UPI, Credit Card, etc.
+    @JsonProperty("signature")
+    @NotNull(message = "signature cannot be null")
+    private String signature;
 }

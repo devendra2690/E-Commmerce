@@ -27,23 +27,4 @@ public class ConsumerMapper {
 
         return consumerDto;
     }
-
-    public static ConsumerEntity modelToEntityMapper(ConsumerModel consumerModel, ConsumerEntity consumerEntity) {
-        consumerEntity.setFirstName(consumerModel.getFirstName());
-        consumerEntity.setLastName(consumerModel.getLastName());
-        consumerEntity.setEmail(consumerModel.getEmail());
-        consumerEntity.setPhoneNumber(consumerModel.getPhoneNumber());
-
-        return consumerEntity;
-    }
-
-    public static ConsumerModel entityToModelMapper(ConsumerEntity consumerEntity, ConsumerModel consumerModel) {
-        consumerModel.setConsumerId(consumerEntity.getConsumerId());
-        consumerModel.setFirstName(consumerEntity.getFirstName());
-        consumerModel.setLastName(consumerEntity.getLastName());
-        consumerModel.setEmail(consumerEntity.getEmail());
-        consumerModel.setPhoneNumber(consumerEntity.getPhoneNumber());
-
-        return consumerModel;
-    }
 }

@@ -35,6 +35,9 @@ public class User {
     @Column(nullable = false)
     private String passwordHash;  // Hashed password
 
+    @Column(name = "stripe_cust_id", nullable = false)
+    private String stripeCustId;
+
     private String phoneNumber;  // Optional phone number
 
     private String profilePicture;  // URL to profile picture
