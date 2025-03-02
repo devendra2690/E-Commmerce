@@ -39,6 +39,7 @@ public class OrderServiceImpl implements OrderService {
     private final InventoryClient inventoryClient;
     private final OrderRepository orderRepository;
     private final ReservationService reservationService;
+    private final MessageBrokerService messageBrokerService;
 
     @Transactional
     @Override
@@ -65,6 +66,7 @@ public class OrderServiceImpl implements OrderService {
         try {
             if (!CollectionUtils.isEmpty(order.getOrderItems())) {
                 orderRepository.save(order);
+                messageBrokerService.processMessageToPaymentService(order);
             }
         } catch (Exception exception) {
             if (!CollectionUtils.isEmpty(order.getOrderItems())) {

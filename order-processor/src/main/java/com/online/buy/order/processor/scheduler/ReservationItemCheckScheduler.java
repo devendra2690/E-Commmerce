@@ -17,10 +17,10 @@ public class ReservationItemCheckScheduler {
     public void processOrders() {
 
         long startTime = System.currentTimeMillis();
-        log.info("Running scheduled order processing job at {}", startTime);
+        log.info("START : Running scheduled job to reverse reservation made for Order Item if payment not done in 30 seconds job : Job started at {}", startTime);
 
         batchUpdateRepository.batchUpdateReservations();
 
-        log.info("Job took :{} milliseconds",(System.currentTimeMillis()-startTime));
+        log.info("END : Job took :{} milliseconds",(System.currentTimeMillis()-startTime));
     }
 }
