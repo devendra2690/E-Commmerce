@@ -1,6 +1,8 @@
 package com.online.buy.payment.processor.config;
 
 import org.springframework.amqp.core.*;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,6 +13,9 @@ public class RabbitMQConfig {
     public static final String MAIN_QUEUE = "payment.queue";
     public static final String DLQ = "payment.queue.dlq";
     public static final String DLQ_EXCHANGE = "payment.queue.dlq.exchange";
+    public static final String ORDER_QUEUE = "order.queue";
+    public static final String RESERVATION_QUEUE = "reservation.queue";
+    public static final String EXCHANGE = "order.exchange";
 
     @Bean
     public Queue mainQueue() {
@@ -38,8 +43,40 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Jackson2JsonMessageConverter messageConverter() {
+    public DirectExchange directExchange() {
+        return new DirectExchange(EXCHANGE);
+    }
+
+    @Bean
+    public Queue orderQueue() {
+        return QueueBuilder.durable(ORDER_QUEUE).build();
+    }
+
+    @Bean
+    public Queue reservationQueue() {
+        return QueueBuilder.durable(RESERVATION_QUEUE).build();
+    }
+
+    @Bean
+    public Binding orderBinding(Queue orderQueue, DirectExchange exchange) {
+        return BindingBuilder.bind(orderQueue).to(exchange).with("order.process");
+    }
+
+    @Bean
+    public Binding reservationBinding(Queue reservationQueue, DirectExchange exchange) {
+        return BindingBuilder.bind(reservationQueue).to(exchange).with("reservation.process");
+    }
+
+    @Bean
+    public Jackson2JsonMessageConverter jsonMessageConverter() {
         return new Jackson2JsonMessageConverter();
+    }
+
+    @Bean
+    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory, Jackson2JsonMessageConverter converter) {
+        RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
+        rabbitTemplate.setMessageConverter(converter);
+        return rabbitTemplate;
     }
 }
 

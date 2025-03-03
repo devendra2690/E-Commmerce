@@ -7,7 +7,11 @@ import com.online.buy.order.processor.service.MessageBrokerService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpServerErrorException;
+
+import java.util.List;
 
 @Slf4j
 @Service
@@ -19,11 +23,17 @@ public class MessageBrokerServiceImpl implements MessageBrokerService {
     private final HmacServiceImpl hmacService;
 
     @Override
-    public void sendPaymentRequest(String customerId, Long amount) throws Exception {
-        //String encryptedCustomerId = encryptionService.encrypt(customerId);
-        String signature = hmacService.sign(customerId + amount);
+    public void sendPaymentRequest(String customerId, Long amount, Long orderId, List<Long> reservationId) throws Exception {
 
-        PaymentMessageDto message = new PaymentMessageDto(customerId, amount, signature);
-        rabbitTemplate.convertAndSend("order.exchange", "payment.process", message);
+        try {
+            //String encryptedCustomerId = encryptionService.encrypt(customerId);
+            String signature = hmacService.sign(customerId + amount);
+
+            PaymentMessageDto message = new PaymentMessageDto(customerId, amount, signature,orderId, reservationId);
+            rabbitTemplate.convertAndSend("order.exchange", "payment.process", message);
+        }catch (Exception exception) {
+            log.error("Error while sending message "+exception.getMessage());
+            throw new HttpServerErrorException(HttpStatusCode.valueOf(500), "Error while sending message to payment queue to process payment");
+        }
     }
 }

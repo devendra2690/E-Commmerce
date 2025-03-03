@@ -8,11 +8,15 @@ import com.online.buy.common.code.repository.ProductRepository;
 import com.online.buy.common.code.repository.ReservationRepository;
 import com.online.buy.inventory.processor.model.OrderItemModel;
 import com.online.buy.inventory.processor.model.OrderModel;
+import com.online.buy.inventory.processor.service.BatchUpdateRepository;
 import com.online.buy.inventory.processor.service.InventoryService;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpServerErrorException;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -21,6 +25,7 @@ public class InventoryServiceImpl implements InventoryService {
 
     private final ProductRepository productRepository;
     private final ReservationRepository reservationRepository;
+    private final BatchUpdateRepository batchUpdateRepository;
 
     @Transactional
     @Override
@@ -76,5 +81,15 @@ public class InventoryServiceImpl implements InventoryService {
             }
         }
         return orderModel;
+    }
+
+    @Override
+    public void updateReservation(List<Long> reservationIds) {
+        try {
+            batchUpdateRepository.batchUpdateReservations(reservationIds);
+        }catch (Exception exception) {
+            // TODO: Throwing error won't do much, if it fails we need to send it to DLQ and generate notification
+            throw new HttpServerErrorException(HttpStatusCode.valueOf(500), "Batch Updated failed for reservation Ids :"+reservationIds);
+        }
     }
 }

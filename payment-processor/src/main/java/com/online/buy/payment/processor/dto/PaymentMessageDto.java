@@ -22,4 +22,11 @@ public class PaymentMessageDto {
     @JsonProperty("signature")
     @NotNull(message = "signature cannot be null")
     private String signature;
+
+    @JsonProperty("orderId")
+    @NotNull(message = "OderId cannot be null")
+    private Long orderId;
+
+    @JsonProperty("reservationId")
+    private List<Long> reservationId;
 }

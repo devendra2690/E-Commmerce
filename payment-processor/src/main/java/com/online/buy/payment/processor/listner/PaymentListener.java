@@ -30,7 +30,7 @@ public class PaymentListener {
                 throw new SecurityException("Invalid payment request: Possible attack detected!");
             }
 
-            paymentService.chargeCustomer(decryptedCustomerId, message.getAmount());
+            paymentService.chargeCustomer(message, decryptedCustomerId);
         }catch (Exception e) {
             log.info("Error processing message: " + message);
             // Send to DLQ instead of re-queuing infinitely

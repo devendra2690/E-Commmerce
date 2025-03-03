@@ -6,6 +6,7 @@ import com.online.buy.common.code.entity.AddressEntity;
 import com.online.buy.common.code.entity.Client;
 import com.online.buy.common.code.entity.Product;
 import com.online.buy.common.code.entity.User;
+import com.online.buy.exception.processor.model.NotFoundException;
 import com.online.buy.order.processor.client.InventoryCheckResult;
 import com.online.buy.order.processor.client.InventoryClient;
 import com.online.buy.order.processor.entity.Order;
@@ -21,8 +22,10 @@ import com.online.buy.order.processor.repository.OrderRepository;
 import com.online.buy.order.processor.service.*;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.client.HttpServerErrorException;
 
 import java.util.List;
 import java.util.Map;
@@ -69,7 +72,7 @@ public class OrderServiceImpl implements OrderService {
                 long totalAmount = order.getOrderItems().stream()
                         .mapToLong(item -> (long) (item.getPrice().doubleValue() * item.getQuantity())) // Multiply price by quantity
                         .sum();
-                messageBrokerService.sendPaymentRequest(user.getStripeCustId(),totalAmount);
+                messageBrokerService.sendPaymentRequest(user.getStripeCustId(),totalAmount, order.getId(), orderItems.stream().map(OrderItem::getId).toList());
             }
         } catch (Exception exception) {
             if (!CollectionUtils.isEmpty(order.getOrderItems())) {
@@ -80,6 +83,20 @@ public class OrderServiceImpl implements OrderService {
 
         orderModel.setAdditionalInfo(inventoryCheckResult.getErrorMap());
         return OrderMapper.entityToModel(order, orderModel);
+    }
+
+    @Override
+    public void updateOrder(Long orderId, String status) {
+
+        try {
+            Order order = orderRepository.findById(orderId).orElseThrow(() -> new NotFoundException(String.format("Order with Id %s does not exist", orderId)));
+            order.setOrderStatus(OrderStatus.valueOf(status));
+            orderRepository.save(order);
+        }catch (Exception exception) {
+            // TODO: Throwing error won't do much, if it fails we need to send it to DLQ and generate notification
+            throw new HttpServerErrorException(HttpStatusCode.valueOf(500), String.format(" Error occurred while saving status for Order %s Status %s",orderId, status));
+        }
+
     }
 
     private InventoryCheckResult checkInventoryAvailability(OrderModel orderModel) {

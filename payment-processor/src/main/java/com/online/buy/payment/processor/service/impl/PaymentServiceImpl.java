@@ -1,5 +1,6 @@
 package com.online.buy.payment.processor.service.impl;
 
+import com.online.buy.payment.processor.dto.PaymentMessageDto;
 import com.online.buy.payment.processor.service.PaymentService;
 import com.stripe.model.PaymentIntent;
 import com.stripe.net.RequestOptions;
@@ -17,7 +18,7 @@ import java.util.UUID;
 public class PaymentServiceImpl implements PaymentService {
 
     @Override
-    public void chargeCustomer(String customerId, Long amount) {
+    public void chargeCustomer(PaymentMessageDto paymentMessageDto, String custId) {
 
         try {
             Random random = new Random();
@@ -48,6 +49,8 @@ public class PaymentServiceImpl implements PaymentService {
             PaymentIntent paymentIntent = PaymentIntent.create(params, requestOptions);
             System.out.println("PaymentIntent Status: " + paymentIntent.getStatus());
             if(paymentIntent.getStatus().equalsIgnoreCase("succeeded")) {
+
+
 
             }else {
 
