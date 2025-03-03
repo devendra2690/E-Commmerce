@@ -66,7 +66,10 @@ public class OrderServiceImpl implements OrderService {
         try {
             if (!CollectionUtils.isEmpty(order.getOrderItems())) {
                 orderRepository.save(order);
-                messageBrokerService.processMessageToPaymentService(order);
+                long totalAmount = order.getOrderItems().stream()
+                        .mapToLong(item -> (long) (item.getPrice().doubleValue() * item.getQuantity())) // Multiply price by quantity
+                        .sum();
+                messageBrokerService.sendPaymentRequest(user.getStripeCustId(),totalAmount);
             }
         } catch (Exception exception) {
             if (!CollectionUtils.isEmpty(order.getOrderItems())) {

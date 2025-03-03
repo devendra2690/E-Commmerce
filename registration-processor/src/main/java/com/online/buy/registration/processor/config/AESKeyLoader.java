@@ -1,3 +1,4 @@
+/*
 package com.online.buy.registration.processor.config;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -22,3 +23,4 @@ public class AESKeyLoader {
         return new SecretKeySpec(decodedKey, "AES");
     }
 }
+*/

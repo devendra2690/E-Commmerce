@@ -3,6 +3,7 @@ package com.online.buy.order.processor.scheduler;
 import com.online.buy.order.processor.repository.BatchUpdateRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -14,6 +15,7 @@ public class ReservationItemCheckScheduler {
     private final BatchUpdateRepository batchUpdateRepository;
 
     @Scheduled(cron = "${reservation.check.scheduler.cron}") // Runs every 20 seconds
+    @SchedulerLock(name = "uniqueTaskName",lockAtMostFor = "5m",lockAtLeastFor = "1m")// Executes every 1m
     public void processOrders() {
 
         long startTime = System.currentTimeMillis();

@@ -83,6 +83,20 @@
 			<artifactId>spring-boot-starter-aop</artifactId>
 		</dependency>
 
+		<!-- ShedLock Core -->
+		<dependency>
+			<groupId>net.javacrumbs.shedlock</groupId>
+			<artifactId>shedlock-spring</artifactId>
+			<version>5.8.0</version>
+		</dependency>
+
+		<!-- ShedLock for JDBC (PostgreSQL, MySQL, etc.) -->
+		<dependency>
+			<groupId>net.javacrumbs.shedlock</groupId>
+			<artifactId>shedlock-provider-jdbc-template</artifactId>
+			<version>5.8.0</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>

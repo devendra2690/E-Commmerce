@@ -8,6 +8,8 @@ import java.util.Base64;
 
 @Service
 public class HmacServiceImpl {
+
+    // TODO : Save somewhere safe
     private static final String SECRET_KEY = "your-secret-hmac-key";
 
     public String sign(String data) throws Exception {

@@ -20,10 +20,10 @@ public class MessageBrokerServiceImpl implements MessageBrokerService {
 
     @Override
     public void sendPaymentRequest(String customerId, Long amount) throws Exception {
-        String encryptedCustomerId = encryptionService.encrypt(customerId);
-        String signature = hmacService.sign(encryptedCustomerId + amount);
+        //String encryptedCustomerId = encryptionService.encrypt(customerId);
+        String signature = hmacService.sign(customerId + amount);
 
-        PaymentMessageDto message = new PaymentMessageDto(encryptedCustomerId, amount, signature);
+        PaymentMessageDto message = new PaymentMessageDto(customerId, amount, signature);
         rabbitTemplate.convertAndSend("order.exchange", "payment.process", message);
     }
 }

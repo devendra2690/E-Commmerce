@@ -20,6 +20,7 @@ public class CustomSecurityConfiguration extends SecurityConfigAdapter {
         //list.add(new AntPathRequestMatcher("/client/**"));
         //list.add(new AntPathRequestMatcher("/product/**"));
         list.add(new AntPathRequestMatcher("/user/register-user"));
+        list.add(new AntPathRequestMatcher("/user/**"));
         return list;
     }
 }
