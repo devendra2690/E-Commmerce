@@ -1,9 +1,11 @@
-package com.online.buy.notification_processor;
+package com.online.buy.notification.processor;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
+@EnableScheduling
 public class NotificationProcessorApplication {
 
 	public static void main(String[] args) {

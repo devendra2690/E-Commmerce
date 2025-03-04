@@ -42,6 +42,10 @@ public class User {
 
     private String profilePicture;  // URL to profile picture
 
+    private String isEmailVerified; // URL to profile picture
+
+    private String isConsentReceived; // URL to profile picture
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private Role role;  // Role (buyer, seller, admin)

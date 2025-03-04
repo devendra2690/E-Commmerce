@@ -1,6 +1,7 @@
 package com.online.buy.payment.processor.service.impl;
 
 import com.online.buy.payment.processor.dto.PaymentMessageDto;
+import com.online.buy.payment.processor.service.MessageBrokerService;
 import com.online.buy.payment.processor.service.PaymentService;
 import com.stripe.model.PaymentIntent;
 import com.stripe.net.RequestOptions;
@@ -16,6 +17,8 @@ import java.util.UUID;
 @Service
 @AllArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
+
+     private final MessageBrokerService messageBrokerService;
 
     @Override
     public void chargeCustomer(PaymentMessageDto paymentMessageDto, String custId) {
@@ -49,13 +52,12 @@ public class PaymentServiceImpl implements PaymentService {
             PaymentIntent paymentIntent = PaymentIntent.create(params, requestOptions);
             System.out.println("PaymentIntent Status: " + paymentIntent.getStatus());
             if(paymentIntent.getStatus().equalsIgnoreCase("succeeded")) {
-
-
-
+                messageBrokerService.sendOrderProcessMessage(paymentMessageDto.getOrderId(),paymentMessageDto.getReservationId(),"COMPLETED");
             }else {
-
+                messageBrokerService.sendOrderProcessMessage(paymentMessageDto.getOrderId(),paymentMessageDto.getReservationId(),"FAILED");
             }
         }catch(Exception e) {
+            messageBrokerService.sendOrderProcessMessage(paymentMessageDto.getOrderId(),paymentMessageDto.getReservationId(),"FAILED");
             throw new HttpServerErrorException(HttpStatusCode.valueOf(500), e.getMessage());
         }
     }
