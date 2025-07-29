@@ -10,9 +10,13 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 import java.io.IOException;
 
 /**
- * Copyright (C) 2021 Montova BV. All rights reserved.
  *
- * @author Stijn Vandendael
+ * JWTAuthenticationFailureHandler is a custom implementation of AuthenticationFailureHandler
+ * that handles authentication failures by logging the error and sending an unauthorized response.
+ * It logs the request method and URI along with the exception message, and sets the HTTP status to 401 Unauthorized.
+ * The response body contains a message indicating that the user does not have the required permission to access the method.
+ * This class is typically used in Spring Security configurations to handle authentication failures
+ *
  */
 public class JWTAuthenticationFailureHandler implements AuthenticationFailureHandler {
 

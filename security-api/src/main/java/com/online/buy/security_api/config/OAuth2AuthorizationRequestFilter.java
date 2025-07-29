@@ -15,6 +15,7 @@ public class OAuth2AuthorizationRequestFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+
         // Check if this is an OAuth2 authorization request
         if (request.getRequestURI().endsWith("/oauth2/authorize")) {
             // Extract the client_id from the request

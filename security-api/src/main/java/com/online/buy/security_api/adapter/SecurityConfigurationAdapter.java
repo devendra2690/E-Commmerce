@@ -7,9 +7,14 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 import java.util.List;
 
 /**
- * Copyright (C) 2021 Montova BV. All rights reserved.
+ * This interface allows customization of the security configuration
+ * by providing hooks for public request matchers,
+ * authentication providers,
+ * and authentication failure handlers.
  *
- * @author Stijn Vandendael
+ * Implementations of this interface can be used to modify the default security behavior
+ * without changing the core security configuration.
+ *
  */
 public interface SecurityConfigurationAdapter {
 

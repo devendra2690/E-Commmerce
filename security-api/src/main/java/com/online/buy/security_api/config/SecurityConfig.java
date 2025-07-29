@@ -37,7 +37,13 @@ public class SecurityConfig {
         this.montovaSecurityConfigAdapter = montovaAuthenticationProviderAdapter;
     }
 
-
+    /**
+     * Configures the JwtDecoder to decode JWT tokens using the JWK Set URI.
+     * This is necessary for validating JWT tokens issued by an OAuth2 authorization server.
+     * The JWK Set URI is typically provided by the authorization server and contains the public keys used to verify the JWT signatures.
+     *
+     * @return a JwtDecoder instance configured with the JWK Set URI
+     */
     @Bean
     public JwtDecoder jwtDecoder() {
         return NimbusJwtDecoder
@@ -61,6 +67,28 @@ public class SecurityConfig {
         return http.build();
     }
 
+    /**
+     * Configures the JwtAuthenticationConverter to use the "roles" claim for authorities.
+     * This is necessary because Spring Security expects roles to be prefixed with "ROLE_".
+     * The converter will map the "roles" claim to authorities without the "ROLE_" prefix.
+     *
+     * It takes the values from the roles array (e.g., ["ROLE_EDITOR", "ROLE_VIEWER"]) and creates a list of GrantedAuthority objects. Because you set the prefix to "",
+     * it uses these names exactly as they are.
+     *
+     * This configuration is essential for ensuring that the JWT token's roles are correctly interpreted by Spring Security, allowing for proper authorization checks.
+     *
+     * @PreAuthorize("hasRole('EDITOR')") is called, Spring Security does the following:
+     *
+     * It looks at the Authentication object for the current user.
+     *
+     * It gets the list of their GrantedAuthority objects.
+     *
+     * The hasRole('EDITOR') expression automatically looks for an authority named ROLE_EDITOR.
+     *
+     * If it finds a match in the user's authority list, access is granted. If not, a 403 Forbidden error is returned.
+     *
+     * This is why it's crucial to ensure that the JwtAuthenticationConverter is set up correctly to map the JWT roles to Spring Security's expected format.
+     */
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();

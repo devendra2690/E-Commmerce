@@ -21,7 +21,7 @@ public class PaymentServiceImpl implements PaymentService {
      private final MessageBrokerService messageBrokerService;
 
     @Override
-    public void chargeCustomer(PaymentMessageDto paymentMessageDto, String custId) {
+    public void executePayment(PaymentMessageDto paymentMessageDto, String custId) {
 
         try {
             Random random = new Random();

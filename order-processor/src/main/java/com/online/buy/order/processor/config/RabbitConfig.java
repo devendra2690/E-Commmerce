@@ -2,6 +2,7 @@ package com.online.buy.order.processor.config;
 
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.context.annotation.Bean;
@@ -37,6 +38,21 @@ public class RabbitConfig {
     public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory, Jackson2JsonMessageConverter converter) {
         RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
         rabbitTemplate.setMessageConverter(converter);
+
+        // Publisher confirm callback
+        rabbitTemplate.setConfirmCallback((CorrelationData correlationData, boolean ack, String cause) -> {
+            if (ack) {
+                System.out.println("Message confirmed: " + correlationData);
+            } else {
+                System.err.println("Message not confirmed: " + cause);
+            }
+        });
+
+        // Return callback for unroutable messages
+        rabbitTemplate.setReturnsCallback(returned -> {
+            System.err.println("Returneda message: " + returned.getMessage());
+        });
+
         return rabbitTemplate;
     }
 }
